@@ -1,9 +1,9 @@
 CXX = g++
 CXXFLAGS = -I /usr/local/include/eigen3 -std=c++0x -Wall -pedantic-errors -g
 
-SRCS = main.cpp bandwidth_minimization.cpp gauss_jordan.cpp
+SRCS = main.cpp bandwidth_minimization.cpp gauss_jordan.cpp tridiagonal.cpp
 OBJS = ${SRCS:.cpp=.o}
-HEADERS = bandwidth_minimization.h gauss_jordan.h
+HEADERS = bandwidth_minimization.h gauss_jordan.h tridiagonal.h
 
 MAIN = main
 
