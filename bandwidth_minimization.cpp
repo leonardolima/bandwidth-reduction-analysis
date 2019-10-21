@@ -11,7 +11,15 @@
 #include <chrono>
 #include <Eigen/Dense>
 #include "gauss_jordan.h"
+#include "tridiagonal.h"
 
+/* Function: node_has_label
+ *
+ * Inputs: 
+ *         P   - permutation matrix
+ *         col - column's index
+ *
+ */
 bool node_has_label (const Eigen::MatrixXf& P, unsigned int col)
 {
     for (int i = 0; i < P.rows(); ++i)
@@ -22,11 +30,19 @@ bool node_has_label (const Eigen::MatrixXf& P, unsigned int col)
     return false;
 }
 
-std::vector<std::pair<int, int>> sort_row_deg (const Eigen::VectorXf& node_row, 
-                                               const std::vector<int>& row_deg, 
-                                               const Eigen::MatrixXf& P)
+/* Function: sort_rows_deg
+ *
+ * Inputs: 
+ *         node_row - row in A of node
+ *         rows_deg - nodes' degree
+ *         P        - permutation matrix
+ *
+ */
+std::vector<std::pair<int, int>> sort_rows_deg (const Eigen::VectorXf& node_row, 
+                                                const std::vector<int>& rows_deg, 
+                                                const Eigen::MatrixXf& P)
 {
-    std::vector<std::pair<int, int>> sorted_row_degs;
+    std::vector<std::pair<int, int>> sorted_rows_deg;
 
     for(int i = 0; i < node_row.size(); ++i)
     {
@@ -34,30 +50,45 @@ std::vector<std::pair<int, int>> sort_row_deg (const Eigen::VectorXf& node_row,
         // or if the node already has a label
         if (node_row[i] != 0 && !node_has_label(P, i))
         {
-            // std::cout << "(" << row_deg[i] << ", " << i << ") ";
-            std::pair<int, int> pair = std::make_pair(row_deg[i], i);
-            sorted_row_degs.push_back(pair);
+            std::pair<int, int> pair = std::make_pair(rows_deg[i], i);
+            sorted_rows_deg.push_back(pair);
         }
     }
 
-    std::sort(sorted_row_degs.begin(), sorted_row_degs.end());
+    std::sort(sorted_rows_deg.begin(), sorted_rows_deg.end());
 
-    return sorted_row_degs;
+    return sorted_rows_deg;
 }
 
-// Returns index (column or row, it doesn't matter) in A
+/* Function: node_index
+ *
+ * Inputs: 
+ *         P     - permutation matrix
+ *         label - corresponding row of permutation matrix
+ *
+ * Returns index (column or row, it doesn't matter) in A (original matrix)
+ *
+ */
 int node_index (const Eigen::MatrixXf& P, int label)
 {
     // index in A corresponds to column (j)
     for(int j = 0; j < P.cols(); ++j)
     {
-        if (P(label,j) != 0) return j;
+        if (P(label, j) != 0) return j;
     }
 
     return -1;
 }
 
-void nodal_numbering (const Eigen::MatrixXf& A, Eigen::MatrixXf& P, const std::vector<int>& row_deg)
+/* Function: nodal_numbering
+ *
+ * Inputs: 
+ *         A        - original matrix
+ *         P        - permutation matrix
+ *         rows_deg - vector of nodes' degree
+ *
+ */
+void nodal_numbering (const Eigen::MatrixXf& A, Eigen::MatrixXf& P, const std::vector<int>& rows_deg)
 {
     unsigned int new_label = 0;
 
@@ -70,48 +101,49 @@ void nodal_numbering (const Eigen::MatrixXf& A, Eigen::MatrixXf& P, const std::v
         Eigen::VectorXf node_row = A.row(node_row_index);
         node_row[node_row_index] = 0; // Diagonal element should not be considered
 
-        std::vector<std::pair<int, int>> sorted_row_degs = sort_row_deg(node_row, row_deg, P);
+        std::vector<std::pair<int, int>> sorted_rows_deg = sort_rows_deg(node_row, rows_deg, P);
 
-        // std::cout << "------==-------" << std::endl;
-        // std::cout << "label = " << label << std::endl;
-        // std::cout << "node_row_index = " << node_row_index << std::endl;
-        // std::cout << "node_row = " << node_row << std::endl;
-        // std::cout << "sorted_row_degs = " << sorted_row_degs.size() << std::endl;
-        // for (std::vector<std::pair<int, int>>::size_type i = 0; i < sorted_row_degs.size(); ++i)
-        // {
-        //     std::cout << "(" << sorted_row_degs[i].first << ", " << sorted_row_degs[i].second << ") ";
-        // }
-        // std::cout << std::endl;
-
-        for (std::vector<std::pair<int, int>>::size_type j = 0; j < sorted_row_degs.size(); ++j)
+        for (std::vector<std::pair<int, int>>::size_type j = 0; j < sorted_rows_deg.size(); ++j)
         {
-            // Update matrix P accordingly
             ++new_label;
-            P(new_label, sorted_row_degs[j].second) = 1;
-            // std::cout << "P = " << std::endl;
-            // std::cout << P << std::endl;
+            P(new_label, sorted_rows_deg[j].second) = 1; // Update matrix P accordingly
         }
     }
 }
 
+/* Function: matrix_deg
+ *
+ * Inputs: 
+ *         R - resulting matrix after applying algorithm
+ * 
+ * Outputs:
+ *         max_deg - matrix degree (i.e. maximum{rows_deg})
+ */
 int matrix_deg (Eigen::MatrixXf& R)
 {
-    std::vector<int> row_deg(R.rows(), 0); // Assuming R is square
+    std::vector<int> rows_deg(R.rows(), 0);
 
     for(int j = 0; j < R.cols(); ++j)
     {
         for (int i = 0; i < R.rows(); ++i)
         {
-            if (R(i,j) != 0 && i != j) row_deg[i] += 1;
+            if (R(i,j) != 0 && i != j) rows_deg[i] += 1;
         }
     }
 
-    auto max_deg = *std::max_element(row_deg.begin(), row_deg.end());
+    auto max_deg = *std::max_element(rows_deg.begin(), rows_deg.end());
 
     return max_deg;
 }
 
-void compareMatrices(const Eigen::MatrixXf& A, const Eigen::MatrixXf& R)
+/* Function: compare_matrices
+ *
+ * Inputs: 
+ *         A - original matrix representing the graph
+ *         R - corresponding resulting matrix after applying algorithm
+ *  
+ */
+void compare_matrices(const Eigen::MatrixXf& A, const Eigen::MatrixXf& R)
 {
     Eigen::MatrixXf A_inv(A.rows(), A.cols());
     Eigen::MatrixXf R_inv(R.rows(), R.cols());
@@ -119,15 +151,19 @@ void compareMatrices(const Eigen::MatrixXf& A, const Eigen::MatrixXf& R)
     R_inv = R;
     
     auto start_A = std::chrono::high_resolution_clock::now();
-    //A.inverse();
+
+    // Apply Gauss-Jordan method to compute inverse
     compute_inverse(A_inv);
+    
     auto stop_A = std::chrono::high_resolution_clock::now();
     auto duration_A = std::chrono::duration<float>(stop_A - start_A);
     auto duration_ns_A = std::chrono::duration_cast<std::chrono::nanoseconds>(duration_A);
     std::cout << "A.inverse() duration = " << duration_ns_A.count() << "ns" << std::endl;
 
     auto start_R = std::chrono::high_resolution_clock::now();
+
     compute_inverse(R_inv);
+
     auto stop_R = std::chrono::high_resolution_clock::now();
     auto duration_R = std::chrono::duration<float>(stop_R - start_R);
     auto duration_ns_R = std::chrono::duration_cast<std::chrono::nanoseconds>(duration_R);
@@ -135,33 +171,50 @@ void compareMatrices(const Eigen::MatrixXf& A, const Eigen::MatrixXf& R)
     std::cout << std::endl;
 }
 
-std::vector<int> compute_row_deg (const Eigen::MatrixXf& A)
+
+/* Function: compute_rows_deg
+ *
+ * Inputs: 
+ *         A - original matrix representing the graph
+ *
+ * Outputs:
+ *         rows_deg - for each node (i.e., column or row index of matrix A)
+ *                    its degree (number of non-zero off-diagonal elements 
+ *                    in column or row) is computed
+ *  
+ */
+std::vector<int> compute_rows_deg (const Eigen::MatrixXf& A)
 {
-    std::vector<int> row_deg(A.rows(), 0); // Assuming A is square
+    std::vector<int> rows_deg(A.rows(), 0); // Assuming A is square
 
     for(int j = 0; j < A.cols(); ++j)
     {
         for (int i = 0; i < A.rows(); ++i)
         {
-            if (A(i,j) != 0 && i != j) row_deg[i] += 1;
+            if (A(i,j) != 0 && i != j) rows_deg[i] += 1;
         }
     }
 
-    return row_deg;
+    return rows_deg;
 }
 
+/* Function: select_starting_nodes
+ *
+ * Inputs: 
+ *         A - original matrix representing the graph
+ *
+ * Outputs:
+ *         starting_nodes - indexes of starting nodes where we
+ *                          consider the lowest degree ones
+ *                          (this approach is not always optimal)
+ *  
+ */
 std::vector<int> select_starting_nodes (Eigen::MatrixXf& A)
 {
     std::vector<int> starting_nodes;
-
  
     // 1. Compute degree of every row, where deg(i) = \Sum_{j!=i} a_{ij} != 0   
-    std::vector<int> row_deg = compute_row_deg(A);
-
-    // for(std::vector<int>::size_type i = 0; i < row_deg.size(); ++i)
-    // {
-    //     std::cout << row_deg[i] << ' ';
-    // }
+    std::vector<int> rows_deg = compute_rows_deg(A);
 
     // 2. Select starting node (usually the one with minimum degree)
     // Permuting rows and columns of matrix A is done using the
@@ -170,56 +223,123 @@ std::vector<int> select_starting_nodes (Eigen::MatrixXf& A)
     // j is the original one. We should always keep in mind that
     // optimal starting nodes doesn't necessarely are the lowest
     // degree ones
-    auto min_deg = *std::min_element(row_deg.begin(), row_deg.end());
-    for(std::vector<int>::size_type i = 0; i < row_deg.size(); ++i)
+    auto min_deg = *std::min_element(rows_deg.begin(), rows_deg.end());
+    for(std::vector<int>::size_type i = 0; i < rows_deg.size(); ++i)
     {
-        if (row_deg[i] == min_deg) starting_nodes.push_back(i);
+        if (rows_deg[i] == min_deg) starting_nodes.push_back(i);
     }
 
     return starting_nodes;
 }
 
-void compute_results (std::vector<int>& starting_nodes, const Eigen::MatrixXf& A,
-                      Eigen::MatrixXf& P, Eigen::MatrixXf& R, Eigen::MatrixXf& minR)
-{   
-    int max_mat_deg = std::numeric_limits<int>::max(); // max_mat_deg = \inf
+/* Function: compute_matrices
+ *
+ * Inputs: starting nodes - possible starting nodes considering the lowest
+ *                          degree strategy (keep in mind it's not always optimal)
+ *         A              - original matrix representing the graph
+ *         P              - permutation matrix
+ *         R              - lowest degree resulting matrix (i.e. P*A*P^T)
+ *
+ * Perform the nodal numbering algorithm in each one of the lowest degree nodes
+ * and check which one generates the lowest degree resulting matrix
+ */
+void compute_matrices (std::vector<int>& starting_nodes, Eigen::MatrixXf& A,
+                      Eigen::MatrixXf& P, Eigen::MatrixXf& R)
+{
+    int max_mat_deg = std::numeric_limits<int>::max(); // max_mat_deg = \infty
 
-    std::vector<int> row_deg = compute_row_deg(A);
+    Eigen::MatrixXf M = Eigen::MatrixXf::Zero(A.rows(), A.cols());
+
+    std::vector<int> rows_deg = compute_rows_deg(A);
     
     for(std::vector<int>::size_type i = 0; i < starting_nodes.size(); ++i)
     {
-        P(0, starting_nodes[i]) = 1; // Starting node is labeled as 1
-        // std::cout << std::endl;
-        // std::cout << "Starting node: " << starting_nodes[i] << std::endl;
-
-        nodal_numbering(A, P, row_deg);
-        // std::cout << "P = " << std::endl;
-        // std::cout << P << std::endl;
-        // std::cout << std::endl;
-
-        R = (P*A*P.transpose());
-        int mat_deg = matrix_deg(R);
-        // std::cout << "Matrix degree = " << mat_deg << std::endl;
-        // std::cout << "P*A*P^T = " << std::endl;
-        // std::cout << "A B C D E F G H I J" << std::endl;
-        // std::cout << R << std::endl;
-        // std::cout << std::endl;
-
-
-        if (mat_deg < max_mat_deg) minR = R;
-
-        P.setZero(); // Clear P matrix
+        P(0, starting_nodes[i]) = 1;          // Starting node is labeled as 1
+        nodal_numbering(A, P, rows_deg);      // Execute algorithm on A
+        M = (P*A*P.transpose());              // Compute resulting matrix M
+        int mat_deg = matrix_deg(M);          // Compute resulting matrix degree
+        if (mat_deg < max_mat_deg) R = M;     // Keep matrix M with lowest degree
+        P.setZero();                          // Clear P matrix
     }
-
-    // std::cout << "Lower degree matrix: " << std::endl;
-    // std::cout << minR << std::endl;
-
-    compareMatrices(A, R);
 }
 
-void generate_binary_random_matrix (Eigen::MatrixXf& A, int dimension)
+/* Function: generate_binary_random_matrix
+ *
+ * Inputs: A - original matrix with each element equal to zero
+ *
+ * Generate a matrix with 1's in the main diagonal and 1's and 0's
+ * randomly distributed along the matrix
+ */
+void generate_binary_random_matrix (Eigen::MatrixXf& A)
 {
+    int dimension = A.rows();
+
     A = (A + Eigen::MatrixXf::Constant(dimension, dimension, 1.))*(1./2.);
     A = (A + Eigen::MatrixXf::Constant(dimension, dimension, 0.));
     A = A.array().round();
+
+    // Fill main diagonal with 1's
+    for(int i = 0; i < A.rows(); ++i)
+    {
+        for (int j = 0; j < A.cols(); ++j)
+        {
+            if (i == j) A(i,j) = 1;
+        }
+    }
+}
+
+/* Function: execute_algorithm
+ *
+ * Inputs: dimension - square matrix' dimension
+ *
+ * A random boolean matrix of size (dimension x dimension)
+ * is generated and the bandwidth minimization algorithm is 
+ * then performed
+ */
+void execute_algorithm (int dimension)
+{
+    Eigen::MatrixXf A(10, 10);
+    A << 1, 1, 0, 1, 0, 0, 0, 0, 1, 0,
+         1, 1, 1, 0, 0, 0, 0, 0, 1, 0,
+         0, 1, 1, 0, 1, 0, 0, 0, 1, 0,
+         1, 0, 0, 1, 1, 1, 0, 0, 1, 1,
+         0, 0, 1, 1, 1, 0, 0, 1, 1, 1,
+         0, 0, 0, 1, 0, 1, 1, 0, 0, 1,
+         0, 0, 0, 0, 0, 1, 1, 1, 0, 1,
+         0, 0, 0, 0, 1, 0, 1, 1, 0, 1,
+         1, 1, 1, 1, 1, 0, 0, 0, 1, 1,
+         0, 0, 0, 1, 1, 1, 1, 1, 1, 1;
+
+    // Eigen::MatrixXf A(5, 5);
+    // A << 1, 1, 0, 1, 0,
+    //      1, 1, 1, 0, 1,
+    //      0, 1, 1, 0, 0,
+    //      1, 0, 0, 1, 1,
+    //      0, 1, 0, 1, 1;
+
+    // Eigen::MatrixXf A = Eigen::MatrixXf::Random(dimension, dimension);
+    // generate_binary_random_matrix(A);
+
+    std::vector<int> starting_nodes = select_starting_nodes(A);
+
+    Eigen::MatrixXf P = Eigen::MatrixXf::Zero(A.rows(), A.cols());
+    Eigen::MatrixXf R = Eigen::MatrixXf::Zero(A.rows(), A.cols());
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    compute_matrices (starting_nodes, A, P, R);
+    std::cout << "R = " << std::endl;
+    std::cout << R << std::endl;
+    compare_matrices(A, R);
+
+    R = Eigen::MatrixXf::Zero(A.rows(), A.cols());
+    std::cout << "Tridiagonal = " << std::endl;
+    compute_tridiagonal(A, R);
+    std::cout << R << std::endl;
+
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration<float>(stop - start);
+    auto duration_s = std::chrono::duration_cast<std::chrono::seconds>(duration);
+    std::cout << "Execution duration = " << duration_s.count() << "s" << std::endl;
+    std::cout << std::endl;
 }

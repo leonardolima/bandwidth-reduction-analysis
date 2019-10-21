@@ -21,15 +21,17 @@ void nodal_numbering (const Eigen::MatrixXf&, Eigen::MatrixXf&, const std::vecto
 
 int matrix_deg (Eigen::MatrixXf&);
 
-void compareMatrices(const Eigen::MatrixXf&, const Eigen::MatrixXf&);
+void compare_matrices(const Eigen::MatrixXf&, const Eigen::MatrixXf&);
 
-std::vector<int> compute_row_deg (const Eigen::MatrixXf&);
+std::vector<int> compute_rows_deg (const Eigen::MatrixXf&);
 
 std::vector<int> select_starting_nodes (Eigen::MatrixXf&);
 
-void compute_results (std::vector<int>&, const Eigen::MatrixXf&,
-                      Eigen::MatrixXf&, Eigen::MatrixXf&, Eigen::MatrixXf&);
+void compute_matrices (std::vector<int>&, Eigen::MatrixXf&,
+                      Eigen::MatrixXf&, Eigen::MatrixXf&);
 
-void generate_binary_random_matrix (Eigen::MatrixXf&, int);
+void generate_binary_random_matrix (Eigen::MatrixXf&);
+
+void execute_algorithm (int);
 
 #endif
