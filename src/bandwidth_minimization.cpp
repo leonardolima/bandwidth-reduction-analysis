@@ -119,7 +119,7 @@ void nodal_numbering (const Eigen::MatrixXf& A, Eigen::MatrixXf& P, const std::v
  * Outputs:
  *         max_deg - matrix degree (i.e. maximum{rows_deg})
  */
-int matrix_deg (Eigen::MatrixXf& R)
+int matrix_deg (const Eigen::MatrixXf& R)
 {
     std::vector<int> rows_deg(R.rows(), 0);
 
@@ -209,7 +209,7 @@ std::vector<int> compute_rows_deg (const Eigen::MatrixXf& A)
  *                          (this approach is not always optimal)
  *  
  */
-std::vector<int> select_starting_nodes (Eigen::MatrixXf& A)
+std::vector<int> select_starting_nodes (const Eigen::MatrixXf& A)
 {
     std::vector<int> starting_nodes;
  
@@ -243,7 +243,7 @@ std::vector<int> select_starting_nodes (Eigen::MatrixXf& A)
  * Perform the nodal numbering algorithm in each one of the lowest degree nodes
  * and check which one generates the lowest degree resulting matrix
  */
-void compute_matrices (std::vector<int>& starting_nodes, Eigen::MatrixXf& A,
+void compute_matrices (const std::vector<int>& starting_nodes, const Eigen::MatrixXf& A,
                       Eigen::MatrixXf& P, Eigen::MatrixXf& R)
 {
     int max_mat_deg = std::numeric_limits<int>::max(); // max_mat_deg = \infty
@@ -298,15 +298,6 @@ void generate_binary_random_matrix (Eigen::MatrixXf& A)
  */
 void execute_algorithm (int dimension)
 {
-    // Example from the paper (docs/references/cuthill1969.pdf)
-    // Eigen::MatrixXf A(5, 5);
-    // A << 1, 1, 0, 1, 0,
-    //      1, 1, 1, 0, 1,
-    //      0, 1, 1, 0, 0,
-    //      1, 0, 0, 1, 1,
-    //      0, 1, 0, 1, 1;
-
-    // Example from the paper (docs/references/cuthill1969.pdf)
     Eigen::MatrixXf A(10, 10);
     A << 1, 1, 0, 1, 0, 0, 0, 0, 1, 0,
          1, 1, 1, 0, 0, 0, 0, 0, 1, 0,
@@ -319,36 +310,36 @@ void execute_algorithm (int dimension)
          1, 1, 1, 1, 1, 0, 0, 0, 1, 1,
          0, 0, 0, 1, 1, 1, 1, 1, 1, 1;
 
-    // Random boolean matrices
+    // Eigen::MatrixXf A(5, 5);
+    // A << 1, 1, 0, 1, 0,
+    //      1, 1, 1, 0, 1,
+    //      0, 1, 1, 0, 0,
+    //      1, 0, 0, 1, 1,
+    //      0, 1, 0, 1, 1;
+
     // Eigen::MatrixXf A = Eigen::MatrixXf::Random(dimension, dimension);
     // generate_binary_random_matrix(A);
-
-    std::cout << "A = " << std::endl;
-    std::cout << A << std::endl;
-    std::cout << std::endl;
 
     std::vector<int> starting_nodes = select_starting_nodes(A);
 
     Eigen::MatrixXf P = Eigen::MatrixXf::Zero(A.rows(), A.cols());
     Eigen::MatrixXf R = Eigen::MatrixXf::Zero(A.rows(), A.cols());
 
-    // auto start = std::chrono::high_resolution_clock::now();
+    auto start = std::chrono::high_resolution_clock::now();
 
     compute_matrices (starting_nodes, A, P, R);
     std::cout << "R = " << std::endl;
     std::cout << R << std::endl;
+    compare_matrices(A, R);
+
+    R = Eigen::MatrixXf::Zero(A.rows(), A.cols());
+    std::cout << "Tridiagonal = " << std::endl;
+    compute_tridiagonal(A, R);
+    std::cout << R << std::endl;
+
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration<float>(stop - start);
+    auto duration_s = std::chrono::duration_cast<std::chrono::seconds>(duration);
+    std::cout << "Execution duration = " << duration_s.count() << "s" << std::endl;
     std::cout << std::endl;
-
-    //compare_matrices(A, R);
-
-    // R = Eigen::MatrixXf::Zero(A.rows(), A.cols());
-    // std::cout << "Tridiagonal = " << std::endl;
-    // compute_tridiagonal(A, R);
-    // std::cout << R << std::endl;
-
-    // auto stop = std::chrono::high_resolution_clock::now();
-    // auto duration = std::chrono::duration<float>(stop - start);
-    // auto duration_s = std::chrono::duration_cast<std::chrono::seconds>(duration);
-    // std::cout << "Execution duration = " << duration_s.count() << "s" << std::endl;
-    // std::cout << std::endl;
 }
