@@ -1,13 +1,8 @@
-#ifndef GAUSS_JORDAN_H
-#define GAUSS_JORDAN_H
+#ifndef BANDWIDTH_MINIMIZATION_H
+#define BANDWIDTH_MINIMIZATION_H
 
-#include <iostream>
 #include <vector>
-#include <utility>
-#include <limits>
-#include <chrono>
 #include <Eigen/Dense>
-#include "gauss_jordan.h"
 
 bool node_has_label (const Eigen::MatrixXf&, unsigned int);
 
