@@ -15,5 +15,5 @@ int main (void)
     float L = 1;
     float dt = 5.e-4;
     int nsteps = 620;
-    diffusion_1d(N, L, dt, nsteps);
+    diffusion_results_to_csv(N, L, dt, nsteps);
 }

@@ -11,6 +11,18 @@
 #include <Eigen/Dense>
 #include <string>
 
+std::string generate_csv_line (const Eigen::VectorXf& U)
+{
+    std::string line;
+
+    for (int i = 0; i < U.size(); ++i) {    
+        if (i < U.size()-1) line += std::to_string(U[i]) + ", ";
+        if (i == U.size()-1) line += std::to_string(U[i]);
+    }
+    
+    return line;
+}
+
 /* Function: diffusion_1d
  *
  * Inputs: N - number of grid points (assuming a square n x n grid)
@@ -21,13 +33,8 @@
  * Finite Difference Method for numerically solving the
  * Heat Equation in 1 dimension
  */
-void diffusion_1d (int N, float L, float dt, int nsteps)
+void diffusion_1d (int N, float L, float dt, int nsteps, std::ofstream& f)
 {
-    // Initialize output file
-    std::ofstream f("out.csv");
-
-    if (!f.is_open()) return;
-
     // Numerical parameters, assuming heat coefficient = 1
     float dx = L/(N-1); // Grid spacing
     float z = dt/pow(dx, 2);
@@ -70,7 +77,6 @@ void diffusion_1d (int N, float L, float dt, int nsteps)
     // std::cout << "B = " << std::endl;
     // std::cout << B << std::endl;
     
-
     for (int m = 0; m < nsteps; ++m)
     {
         // b(i) = ( I - (z/2)*T) * U(:,i) 
@@ -84,15 +90,20 @@ void diffusion_1d (int N, float L, float dt, int nsteps)
         U = A.colPivHouseholderQr().solve(b);
 
         // CSV output
-        std::string line;
-        for (int i = 0; i < N-2; ++i) {
-
-            if (i < N-3) line += std::to_string(U[i]) + ", ";
-            if (i == N-3) line += std::to_string(U[i]);
-        }
+        std::string line = generate_csv_line(U);
 
         f << line << std::endl;
     }
+}
+
+void diffusion_results_to_csv (int N, float L, float dt, int nsteps)
+{
+    // Initialize output file
+    std::ofstream f("out.csv");
+
+    if (!f.is_open()) return;
+
+    diffusion_1d(N, L, dt, nsteps, f);
 
     f.close();
 }
