@@ -12,7 +12,7 @@ These are the basic steps to take if you need to run the project on your local m
 
 ### Running
 
-At this point, only the bandwidth minimization solution found [here](docs/references/cuthill1969.pdf) is already implemented. In the [bandwidth_minimization.cpp](src/bandwidth_minimization.cpp) file you can find a function named *execute_algorithm()* where it is possible to change the matrix that you are currently working on.
+At this point, only the bandwidth minimization solution found [here](docs/references/cuthill1969.pdf) is already implemented. In the [bandwidth_minimization.cpp](src/bandwidth_minimization.cpp) file, you can find a function named *execute_algorithm()*, from which it is possible to change the matrix that you are currently working on.
 
 In the [src](src/) directory there is a **Makefile**. You can run 
 
