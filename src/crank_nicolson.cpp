@@ -121,10 +121,12 @@ void diffusion_results_to_csv (int N, float L, float dt, int nsteps)
 void diffusion_2d (int N, float L, float dt, int nsteps)
 {
     // // Numerical parameters, assuming heat coefficient = 1
-    // int n = (int)sqrt(N);
+    // int n = (int)sqrt(N-1);
     // float dx = L/(N-1); // Grid spacing, assuming a square grid (i.e. dx = dy)
     // float a = 1 + dt/pow(dx, 2);
-    // float c = -k/2*pow(dx, 2);
+    // float c = -dt/2*pow(dx, 2);
+    // float d = 1 - (2*dt/pow(dx, 2));
+    // float e = dt/(2*pow(dx, 2));
 
     // // Initializing matrice and vectors
     // Eigen::MatrixXf H = Eigen::MatrixXf::Zero(N-2, N-2);
@@ -135,4 +137,38 @@ void diffusion_2d (int N, float L, float dt, int nsteps)
     // for (int i = 0; i < N-2; ++i) U[i] = dx + dt;
 
     // // Defining matrice and vectors
+    // H = MatrixXf::Identity(N-2, N-2);
+    // H.topRightCorner(N-3, N-3) = MatrixXf::Identity(N-3, N-3);
+    // H.bottomLeftCorner(N-3, N-3) = MatrixXf::Identity(N-3, N-3);
+    // H.topRightCorner(N-2-n, N-2-n) = MatrixXf::Identity(N-2-n, N-2-n);
+    // H.bottomLeftCorner(N-2-n, N-2-n) = MatrixXf::Identity(N-2-n, N-2-n);
+
+    // // std::cout << "H = " << std::endl;
+    // // std::cout << H << std::endl << std::endl;
+    
+    // for (int m = 0; m < nsteps; ++m)
+    // {
+    //     for (int j = 0; j < n; ++j)
+    //     {
+    //         for (int i = 0; i < n; ++i)
+    //         {
+    //             if (i == 0)
+    //             {
+    //                 b[i+j] = d*U(i,j) + e*(U(i+1, j) + U(i, j-1) + U(i, j+1));
+
+    //             } else {
+    //                 if (j == 0) b[i+j] = d*U(i,j) + e*(U(i-1, j) + U(i+1, j) + U(i, j+1));
+    //                 else b[i+j] = d*U(i,j) + e*(U(i-1, j) + U(i+1, j) + U(i, j-1) + U(i, j+1));
+    //             }
+    //         }
+    //     }
+ 
+    //     // Solving the system of eq. for m+1
+    //     U = A.colPivHouseholderQr().solve(b);
+ 
+    //     // CSV output
+    //     std::string line = generate_csv_line(U);
+
+    //     f << line << std::endl;
+    // }
 }
