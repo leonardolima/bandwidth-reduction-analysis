@@ -27,6 +27,8 @@ void compute_matrices (std::vector<int>&, Eigen::MatrixXf&,
 
 void generate_binary_random_matrix (Eigen::MatrixXf&);
 
-void execute_algorithm (int);
+void run_tests (int);
+
+void run_algorithm (const Eigen::MatrixXf&, Eigen::MatrixXf&, Eigen::MatrixXf&);
 
 #endif

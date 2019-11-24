@@ -296,7 +296,7 @@ void generate_binary_random_matrix (Eigen::MatrixXf& A)
  * is generated and the bandwidth minimization algorithm is 
  * then performed
  */
-void execute_algorithm (int dimension)
+void run_tests (int dimension)
 {
     Eigen::MatrixXf A(10, 10);
     A << 1, 1, 0, 1, 0, 0, 0, 0, 1, 0,
@@ -327,7 +327,7 @@ void execute_algorithm (int dimension)
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    compute_matrices (starting_nodes, A, P, R);
+    compute_matrices(starting_nodes, A, P, R);
     std::cout << "R = " << std::endl;
     std::cout << R << std::endl;
     compare_matrices(A, R);
@@ -342,4 +342,10 @@ void execute_algorithm (int dimension)
     auto duration_s = std::chrono::duration_cast<std::chrono::seconds>(duration);
     std::cout << "Execution duration = " << duration_s.count() << "s" << std::endl;
     std::cout << std::endl;
+}
+
+void run_algorithm (const Eigen::MatrixXf& A, Eigen::MatrixXf& P, Eigen::MatrixXf& R)
+{
+    std::vector<int> starting_nodes = select_starting_nodes(A);
+    compute_matrices(starting_nodes, A, P, R);    
 }
