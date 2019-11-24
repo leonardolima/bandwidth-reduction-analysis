@@ -31,7 +31,7 @@ bool check_if_inversible (const Eigen::MatrixXf& M)
     return true;
 }
 
-/* Function: check_if_inversible
+/* Function: gauss_jordan
  *
  * Inputs: M - original matrix
  *
