@@ -6,107 +6,35 @@
 
 #include <cmath>
 #include <iostream>
-#include <vector>
+#include <Eigen/Dense>
 #include "tridiagonal.h"
 
-/* Function: compute_tridiagonal
+/* Function: tridag
  *
- * Inputs: A - original matrix
- *         R - tridiagonal matrix
+ * Inputs: a - lower offdiagonal
+ *         b - diagonal
+ *         c - upper offdiagonal
+ *         r - right hand side vector
  *
- * Numerical Recipes' implementation of Householder's method.
+ * Numerical Recipes' implementation of a method for solving tridiagonal 
+ * system of linear equations
  */
-
-void compute_tridiagonal (Eigen::MatrixXf& A, Eigen::MatrixXf& R)
+void tridag(const Eigen::VectorXf& a, const Eigen::VectorXf& b, const Eigen::VectorXf& c, const Eigen::VectorXf& r, Eigen::VectorXf& u)
 {
-    int n = A.rows(), l = 0;
-    double scale, hh, h, g, f;
+    int j;
+    double bet;
+    int n = a.size();
+    Eigen::VectorXf gam(n);
 
-    std::vector<int> d(n, 0), e(n, 0);
+    if (b[0] == 0.0) std::cout << "Error 1 in tridag" << std::endl;
+    u[0] = r[0]/(bet=b[0]);
 
-    for (int i = n-1; i > 0; --i)
-    {
-        l = i-1;
-        h = scale = 0.0;
-        if (l > 0)
-        {
-            for (int k = 0; k < l+1; ++k) scale += std::fabs(A(i, k));
-            if (scale == 0.0) e[i] = A(i, l);
-            else {
-                for (int k = 0; k < l+1; ++k)
-                {
-                    A(i, k) /= scale;
-                    h += A(i, k) * A(i, k);                    
-                }
-                f = A(i, l);
-                g = (f >= 0.0 ? -sqrt(h) : sqrt(h));
-                e[i] = scale*g;
-                h -= f*g;
-                A(i, l) = f-g;
-                f = 0.0;
-                for (int j = 0; j < l+1; ++j)
-                {
-                    A(j, i) = A(i, j)/h;
-                    g = 0.0;
-                    for (int k = 0; k < j+1; ++k) g += A(j, k)*A(i, k);
-                    for (int k = j+1; k < l+1; ++k) g += A(k, j)*A(i, k);
-                    e[j] = g/h;
-                    f += e[j]*A(i, j);
-                }
-                hh = f/(h+h);
-                for (int j = 0; j < l+1; ++j)
-                {
-                    f = A(i, j);
-                    e[j] = g = e[j]-hh*f;
-                    for (int k = 0; k < j+1; ++k) A(j, k) -= (f*e[k]+g*A(i, k));
-                }
-            }
-        } 
-        else e[i] = A(i, l);
-        d[i] = h;
+    for (j = 1; j < n; j++) {
+        gam[j] = c[j-1]/bet;
+        bet = b[j]-a[j]*gam[j];
+        if (bet == 0.0) std::cout << "Error 2 in tridag" << std::endl;
+        u[j] = (r[j]-a[j]*u[j-1])/bet;
     }
 
-    d[0] = 0.0;
-    e[0] = 0.0;
-
-    for (int i = 0; i < n; ++i)
-    {
-        l = i;
-        if (d[i] != 0.0)
-        {
-            for (int j = 0; j < l; ++j)
-            {
-                g = 0.0;
-                for (int k = 0; k < l; ++k) g += A(i, k)*A(k, j);
-                for (int k = 0; k < l; ++k) A(k, j) -= g*A(k, i);
-            }
-        }
-        d[i] = A(i, i);
-        A(i, i) = 1.0;
-        for (int j = 0; j < l; j++) A(j, i) = A(i, j) = 0.0;
-    }
-
-    std::cout << "d = " << std::endl;
-    for (int i = 0; i < n; ++i) {
-        std::cout << d[i] << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "e = " << std::endl;
-    for (int i = 0; i < n; ++i) {
-        std::cout << e[i] << " ";
-    }
-    std::cout << std::endl;
-
-    // Construct R
-    for (int i = 0; i < n; ++i)
-    {
-        R(i, i) = d[i];
-        if (i < n-1)
-        {
-            // We ignore the first element of e
-            R(i, i+1) = e[i+1];
-            R(i+1, i) = e[i+1];
-        }
-    }
+    for (j = (n-2); j >= 0; j--) u[j] -= gam[j+1]*u[j+1];
 }

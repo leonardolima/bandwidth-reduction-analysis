@@ -3,6 +3,6 @@
 
 #include <Eigen/Dense>
 
-void compute_tridiagonal (Eigen::MatrixXf&, Eigen::MatrixXf&);
+void tridag(const Eigen::VectorXf&, const Eigen::VectorXf&, const Eigen::VectorXf&, const Eigen::VectorXf&, Eigen::VectorXf&);
 
 #endif

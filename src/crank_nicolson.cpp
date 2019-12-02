@@ -5,34 +5,13 @@
 /******************************/
 
 #include <iostream>
-#include <fstream>
 #include <vector>
 #include <cmath>
 #include <string>
 #include <chrono>
 #include <Eigen/Dense>
 #include "bandwidth_minimization.h"
-
-
-/* Function: generate_csv_line
- *
- * Inputs: U - vector of solutions for a particular time step
- *
- * The values of the vector are formatted as a csv line
- */
-void matrix_to_csv(const Eigen::MatrixXf& R)
-{
-    const Eigen::IOFormat CSVFormat(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", "\n");
-
-    // Initialize output file
-    std::ofstream f("out.csv");
-
-    if (!f.is_open()) return;
-
-    f << R.format(CSVFormat);
-
-    f.close();
-}
+#include "io.h"
 
 /* Function: diffusion_1d
  *

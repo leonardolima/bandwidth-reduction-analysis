@@ -333,9 +333,6 @@ void run_tests (int dimension)
     compare_matrices(A, R);
 
     R = Eigen::MatrixXf::Zero(A.rows(), A.cols());
-    std::cout << "Tridiagonal = " << std::endl;
-    compute_tridiagonal(A, R);
-    std::cout << R << std::endl;
 
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration<float>(stop - start);
