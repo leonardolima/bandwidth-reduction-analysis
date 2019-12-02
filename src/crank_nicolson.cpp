@@ -8,21 +8,30 @@
 #include <fstream>
 #include <vector>
 #include <cmath>
-#include <Eigen/Dense>
 #include <string>
 #include <chrono>
+#include <Eigen/Dense>
 #include "bandwidth_minimization.h"
 
-std::string generate_csv_line (const Eigen::VectorXf& U)
-{
-    std::string line;
 
-    for (int i = 0; i < U.size(); ++i) {    
-        if (i < U.size()-1) line += std::to_string(U[i]) + ", ";
-        if (i == U.size()-1) line += std::to_string(U[i]);
-    }
-    
-    return line;
+/* Function: generate_csv_line
+ *
+ * Inputs: U - vector of solutions for a particular time step
+ *
+ * The values of the vector are formatted as a csv line
+ */
+void matrix_to_csv(const Eigen::MatrixXf& R)
+{
+    const Eigen::IOFormat CSVFormat(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", "\n");
+
+    // Initialize output file
+    std::ofstream f("out.csv");
+
+    if (!f.is_open()) return;
+
+    f << R.format(CSVFormat);
+
+    f.close();
 }
 
 /* Function: diffusion_1d
@@ -31,15 +40,16 @@ std::string generate_csv_line (const Eigen::VectorXf& U)
  *         L - size of the grid
  *         dt - time step
  *         nsteps - number of time steps
+ *         R - matrix[N-2, nsteps] in order to save U at each step
  *
  * Finite Difference Method for numerically solving the
  * Heat Equation in 1 dimension
  */
-void diffusion_1d (int N, float L, float dt, int nsteps, std::ofstream& f)
+void diffusion_1d (int N, float L, float dt, int nsteps, Eigen::MatrixXf& R)
 {
     // Numerical parameters, assuming heat coefficient = 1
     float dx = L/(N-1); // Grid spacing
-    float z = dt/pow(dx, 2);
+    float z = dt/pow(dx, 2); // Auxiliary variable
 
     // Initializing matrices and vectors
     Eigen::MatrixXf T = Eigen::MatrixXf::Zero(N-2, N-2);
@@ -57,6 +67,7 @@ void diffusion_1d (int N, float L, float dt, int nsteps, std::ofstream& f)
     // Last row
     T(N-3, N-3) = 2;
     T(N-3, N-4) = -1;
+    // [1, N-4] rows
     for (int i = 1; i < N-3; ++i)
     {
         T(i, i-1) = -1;
@@ -64,8 +75,11 @@ void diffusion_1d (int N, float L, float dt, int nsteps, std::ofstream& f)
         T(i, i+1) = -1;
     }
 
-    // Initial condition, assuming u(0, x) = 2x for 0 <= x <= 1
-    for (int i = 0; i < N-2; ++i) U[i] = 2*dx;
+    // Initial condition, assuming u(0, x) = 2x for 0 <= x <= 1,
+    // Boundary conditions, assuming u(0, 0) = 0 and u(0, N-3) = 0
+    U[0] = 0;
+    U[N-3] = 0;
+    for (int i = 1; i < N-3; ++i) U[i] = 2*dx;
 
     // std::cout << "T = " << std::endl;
     // std::cout << T << std::endl << std::endl;
@@ -84,30 +98,34 @@ void diffusion_1d (int N, float L, float dt, int nsteps, std::ofstream& f)
         // b(i) = ( I - (z/2)*T) * U(:,i) 
         for (int i = 0; i < N-2; ++i)
         {
+            // Solving b for m
             b[i] = B.row(i)*U;
         }
 
         // Solving the system of eq. for m+1
         // ( I + (z/2)*T) * U = b
         U = A.colPivHouseholderQr().solve(b);
+        // Boundary conditions
+        U[0] = 0;
+        U[N-3] = 0;
 
-        // CSV output
-        std::string line = generate_csv_line(U);
-
-        f << line << std::endl;
+        R.col(m) = U;
     }
 }
-
+/* Function: diffusion_1d_results_to_csv
+ *
+ * Inputs: N - number of grid points (assuming a square n x n grid)
+ *         L - size of the grid
+ *         dt - time step
+ *         nsteps - number of time steps
+ *
+ * Saves the solutions for each time step as a csv file
+ */
 void diffusion_1d_results_to_csv (int N, float L, float dt, int nsteps)
 {
-    // Initialize output file
-    std::ofstream f("out.csv");
-
-    if (!f.is_open()) return;
-
-    diffusion_1d(N, L, dt, nsteps, f);
-
-    f.close();
+    Eigen::MatrixXf R = Eigen::MatrixXf::Zero(N-2, nsteps);
+    diffusion_1d(N, L, dt, nsteps, R);
+    matrix_to_csv(R);
 }
 
 /* Function: diffusion_2d
@@ -116,19 +134,22 @@ void diffusion_1d_results_to_csv (int N, float L, float dt, int nsteps)
  *         L - size of the grid
  *         dt - time step
  *         nsteps - number of time steps
+ *         R - matrix[N-2, nsteps] in order to save U at each step
+ *         apply_cuthill_mckee - applies the Cuthill-McKee algorithm to H 
+ *                               in order to improve performance
  *
  * Finite Difference Method for numerically solving the
  * Heat Equation in 2 dimensions
  */
-void diffusion_2d (int N, float L, float dt, int nsteps, std::ofstream& f, bool apply_cuthill_mckee)
+void diffusion_2d (int N, float L, float dt, int nsteps, Eigen::MatrixXf& R, bool apply_cuthill_mckee)
 {
     // Numerical parameters, assuming heat coefficient = 1
     int n = (int)sqrt(N-1);
-    float dx = L/(N-1); // Grid spacing, assuming a square grid (i.e. dx = dy)
-    float a = 1 + dt/pow(dx, 2);
-    float c = -dt/(2*pow(dx, 2));
-    float d = 1 - (2*dt/pow(dx, 2));
-    float e = dt/(2*pow(dx, 2));
+    float dx = L/(N-1);                // Grid spacing, assuming a square grid
+    float a = 1 + ((2*dt)/pow(dx, 2)); // Diagonal coefficient
+    float c = -dt/(2*pow(dx, 2));      // Offdiagonal coefficient
+    float d = 1 - (2*(dt/pow(dx, 2))); // Auxiliary coefficient used to solve b
+    float e = dt/(2*pow(dx, 2));       // Auxiliary coefficient used to solve b
 
     // Initializing matrice and vectors
     Eigen::MatrixXf H = Eigen::MatrixXf::Zero(N-2, N-2);
@@ -137,8 +158,23 @@ void diffusion_2d (int N, float L, float dt, int nsteps, std::ofstream& f, bool 
     // Auxiliary matrix
     Eigen::MatrixXf M = Eigen::MatrixXf::Zero(N-2, N-2);
 
-    // Initial condition, assuming u(0, x, y) = x + y
-    for (int i = 0; i < N-2; ++i) U[i] = dx + dt;
+    for (int i = 0; i < N-2; ++i) 
+    {
+        // Boundary conditions, assuming homogeneous dirichlet conditions
+        // u(0, y, t) = u(n, y, t) = 0 and
+        // u(x, 0, t) = u(x, n, t) = 0
+        if ((i < n) || (i > N-2-n)) U[i] = 0;
+        else {
+            if ((i % n) == 0)
+            {
+                U[i-1] = 0;
+                U[i] = 0;
+            } else {
+                // Initial condition, assuming u(x, y, 0) = 2x + 2y
+                U[i] = dx + dt;
+            }
+        }
+    }
 
     // Defining H
     H = a*Eigen::MatrixXf::Identity(N-2, N-2);
@@ -154,7 +190,7 @@ void diffusion_2d (int N, float L, float dt, int nsteps, std::ofstream& f, bool 
     M.topRightCorner(N-2-n, N-2-n) += e*Eigen::MatrixXf::Identity(N-2-n, N-2-n);
     M.bottomLeftCorner(N-2-n, N-2-n) += e*Eigen::MatrixXf::Identity(N-2-n, N-2-n);
 
-    // Removing elements from the offdiagonals at positions 
+    // Removing some elements from the offdiagonals at positions 
     // (n, n-1), (n-1, n) and so on
     for (int i = 0; i < N-2; ++i)
     {
@@ -167,8 +203,10 @@ void diffusion_2d (int N, float L, float dt, int nsteps, std::ofstream& f, bool 
         }
     }
 
-    std::cout << "H = " << std::endl;
-    std::cout << H << std::endl;
+    // std::cout << "H = " << std::endl;
+    // std::cout << H << std::endl;
+    // std::cout << "M = " << std::endl;
+    // std::cout << M << std::endl;
 
     // Applying the Cuthill-McKee algorithm to H
     if (apply_cuthill_mckee)
@@ -177,47 +215,88 @@ void diffusion_2d (int N, float L, float dt, int nsteps, std::ofstream& f, bool 
         Eigen::MatrixXf R = Eigen::MatrixXf::Zero(N-2, N-2);
         run_algorithm(H, P, R);
 
-        std::cout << "R = " << std::endl;
-        std::cout << R << std::endl;
+        // std::cout << "H = " << std::endl;
+        // std::cout << H << std::endl;
+        // std::cout << "R = " << std::endl;
+        // std::cout << R << std::endl;
         H = R;
+        M = (P*M*P.transpose());
     }
     
     for (int m = 0; m < nsteps; ++m)
     {
-        for (int i = 0; i < N-2; ++i)
-        {
-            b[i] = M.row(i)*U;
-        }
+        // std::cout << "U[m] = " << std::endl;
+        // std::cout << U << std::endl;
+
+        // Mb = U (solving b for U at step m)
+        b = M.partialPivLu().solve(U);
+
+        // std::cout << "b[m] = " << std::endl;
+        // std::cout << b << std::endl;
  
         // Solving the system of eq. for m+1
-        U = H.fullPivLu().solve(b);
- 
-        // CSV output
-        std::string line = generate_csv_line(U);
+        // HU = b
+        U = H.partialPivLu().solve(b);
 
-        f << line << std::endl;
+        // for (int i = 0; i < N-2; ++i)
+        // {
+        //     // Solving b for m
+        //     U[i] = H.row(i)*b;
+        // }
+
+        // Boundary conditions
+        for (int i = 0; i < N-2; ++i) 
+        {
+            if ((i < n) || (i > N-2-n)) U[i] = 0;
+            else {
+                if ((i % n) == 0)
+                {
+                    U[i-1] = 0;
+                    U[i] = 0;
+                }
+            }
+        }
+
+        R.col(m) = U;
     }
 }
 
+/* Function: diffusion_2d_results_to_csv
+ *
+ * Inputs: N - number of grid points (assuming a square n x n grid)
+ *         L - size of the grid
+ *         dt - time step
+ *         nsteps - number of time steps
+ *
+ * Saves the solutions for each time step as a csv file
+ */
 void diffusion_2d_results_to_csv (int N, float L, float dt, int nsteps)
 {
-    // Initialize output file
-    std::ofstream f("out.csv");
-
-    if (!f.is_open()) return;
-
-    diffusion_2d(N, L, dt, nsteps, f, false);
-
-    f.close();
+    Eigen::MatrixXf R = Eigen::MatrixXf::Zero(N-2, nsteps);
+    diffusion_2d(N, L, dt, nsteps, R, false);
+    matrix_to_csv(R);
 }
 
+/* Function: diffusion_1d_results_to_csv
+ *
+ * Inputs: N - number of grid points (assuming a square n x n grid)
+ *         L - size of the grid
+ *         dt - time step
+ *         nsteps - number of time steps
+ *
+ * Compares the time performance of the Crank-Nicolson approach for
+ * solving the 2D diffusion problem before and after applying the
+ * Cuthill-McKee algorithm to matrix H. We reduce its bandwidth in
+ * order to improve the performance when solving the linear system
+ * at each time step
+ */
 void diffusion_2d_compare (int N, float L, float dt, int nsteps)
 {
-    std::ofstream f("out.csv");
+    Eigen::MatrixXf R = Eigen::MatrixXf::Zero(N-2, nsteps);
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    diffusion_2d(N, L, dt, nsteps, f, false);
+    diffusion_2d(N, L, dt, nsteps, R, false);
 
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration<float>(stop - start);
@@ -227,7 +306,7 @@ void diffusion_2d_compare (int N, float L, float dt, int nsteps)
 
     start = std::chrono::high_resolution_clock::now();
 
-    diffusion_2d(N, L, dt, nsteps, f, true);
+    diffusion_2d(N, L, dt, nsteps, R, true);
 
     stop = std::chrono::high_resolution_clock::now();
     duration = std::chrono::duration<float>(stop - start);
