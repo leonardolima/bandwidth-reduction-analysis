@@ -22,7 +22,7 @@ void compare_lubksb_tridag(int N)
 
     int j = 0;
 
-    for (int i = 200; i < N+200; i=i+10)
+    for (int i = 900; i < N+900; i=i+10)
     {
         Eigen::RowVectorXf row_vec(3);
 
@@ -39,7 +39,7 @@ void compare_lubksb_tridag(int N)
 
         auto stop = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration<float>(stop - start);
-        auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+        auto duration_ms = std::chrono::duration_cast<std::chrono::microseconds>(duration);
 
         row_vec[1] = duration_ms.count();
 
@@ -54,7 +54,7 @@ void compare_lubksb_tridag(int N)
 
         stop = std::chrono::high_resolution_clock::now();
         duration = std::chrono::duration<float>(stop - start);
-        duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+        duration_ms = std::chrono::duration_cast<std::chrono::microseconds>(duration);
 
         row_vec[2] = duration_ms.count();
 
