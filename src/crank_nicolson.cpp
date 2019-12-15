@@ -1,6 +1,6 @@
 /******************************
  *                            *
- *    Leonardo Lima, 2019     *  
+ *    Leonardo Lima, 2019     *
  *                            *
 /******************************/
 
@@ -71,10 +71,10 @@ void diffusion_1d (int N, float L, float dt, int nsteps, Eigen::MatrixXf& R)
     // std::cout << A << std::endl << std::endl;
     // std::cout << "B = " << std::endl;
     // std::cout << B << std::endl;
-    
+
     for (int m = 0; m < nsteps; ++m)
     {
-        // b(i) = ( I - (z/2)*T) * U(:,i) 
+        // b(i) = ( I - (z/2)*T) * U(:,i)
         for (int i = 0; i < N-2; ++i)
         {
             // Solving b for m
@@ -114,7 +114,7 @@ void diffusion_1d_results_to_csv (int N, float L, float dt, int nsteps)
  *         dt - time step
  *         nsteps - number of time steps
  *         R - matrix[N-2, nsteps] in order to save U at each step
- *         apply_cuthill_mckee - applies the Cuthill-McKee algorithm to H 
+ *         apply_cuthill_mckee - applies the Cuthill-McKee algorithm to H
  *                               in order to improve performance
  *
  * Finite Difference Method for numerically solving the
@@ -128,7 +128,6 @@ void diffusion_2d (int N, float L, float dt, int nsteps, Eigen::MatrixXf& R, boo
     float a = 1 + ((2*dt)/pow(dx, 2)); // Diagonal coefficient
     float c = -dt/(2*pow(dx, 2));      // Offdiagonal coefficient
     float d = 1 - (2*(dt/pow(dx, 2))); // Auxiliary coefficient used to solve b
-    float e = dt/(2*pow(dx, 2));       // Auxiliary coefficient used to solve b
 
     // Initializing matrice and vectors
     Eigen::MatrixXf H = Eigen::MatrixXf::Zero(N-2, N-2);
@@ -137,7 +136,7 @@ void diffusion_2d (int N, float L, float dt, int nsteps, Eigen::MatrixXf& R, boo
     // Auxiliary matrix
     Eigen::MatrixXf M = Eigen::MatrixXf::Zero(N-2, N-2);
 
-    for (int i = 0; i < N-2; ++i) 
+    for (int i = 0; i < N-2; ++i)
     {
         // Boundary conditions, assuming homogeneous dirichlet conditions
         // u(0, y, t) = u(n, y, t) = 0 and
@@ -164,12 +163,12 @@ void diffusion_2d (int N, float L, float dt, int nsteps, Eigen::MatrixXf& R, boo
 
     // Defining M
     M = d*Eigen::MatrixXf::Identity(N-2, N-2);
-    M.topRightCorner(N-3, N-3) += e*Eigen::MatrixXf::Identity(N-3, N-3);
-    M.bottomLeftCorner(N-3, N-3) += e*Eigen::MatrixXf::Identity(N-3, N-3);
-    M.topRightCorner(N-2-n, N-2-n) += e*Eigen::MatrixXf::Identity(N-2-n, N-2-n);
-    M.bottomLeftCorner(N-2-n, N-2-n) += e*Eigen::MatrixXf::Identity(N-2-n, N-2-n);
+    M.topRightCorner(N-3, N-3) += -c*Eigen::MatrixXf::Identity(N-3, N-3);
+    M.bottomLeftCorner(N-3, N-3) += -c*Eigen::MatrixXf::Identity(N-3, N-3);
+    M.topRightCorner(N-2-n, N-2-n) += -c*Eigen::MatrixXf::Identity(N-2-n, N-2-n);
+    M.bottomLeftCorner(N-2-n, N-2-n) += -c*Eigen::MatrixXf::Identity(N-2-n, N-2-n);
 
-    // Removing some elements from the offdiagonals at positions 
+    // Removing some elements from the offdiagonals at positions
     // (n, n-1), (n-1, n) and so on
     for (int i = 0; i < N-2; ++i)
     {
@@ -201,7 +200,7 @@ void diffusion_2d (int N, float L, float dt, int nsteps, Eigen::MatrixXf& R, boo
         H = R;
         M = (P*M*P.transpose());
     }
-    
+
     for (int m = 0; m < nsteps; ++m)
     {
         // std::cout << "U[m] = " << std::endl;
@@ -212,7 +211,7 @@ void diffusion_2d (int N, float L, float dt, int nsteps, Eigen::MatrixXf& R, boo
 
         // std::cout << "b[m] = " << std::endl;
         // std::cout << b << std::endl;
- 
+
         // Solving the system of eq. for m+1
         // HU = b
         U = H.partialPivLu().solve(b);
@@ -224,7 +223,7 @@ void diffusion_2d (int N, float L, float dt, int nsteps, Eigen::MatrixXf& R, boo
         // }
 
         // Boundary conditions
-        for (int i = 0; i < N-2; ++i) 
+        for (int i = 0; i < N-2; ++i)
         {
             if ((i < n) || (i > N-2-n)) U[i] = 0;
             else {
@@ -256,7 +255,7 @@ void diffusion_2d_results_to_csv (int N, float L, float dt, int nsteps)
     matrix_to_csv(R);
 }
 
-/* Function: diffusion_1d_results_to_csv
+/* Function: diffusion_2d_compare
  *
  * Inputs: N - number of grid points (assuming a square n x n grid)
  *         L - size of the grid
@@ -267,7 +266,7 @@ void diffusion_2d_results_to_csv (int N, float L, float dt, int nsteps)
  * solving the 2D diffusion problem before and after applying the
  * Cuthill-McKee algorithm to matrix H. We reduce its bandwidth in
  * order to improve the performance when solving the linear system
- * at each time step
+ * at each time step. A squared grid is assumed
  */
 void diffusion_2d_compare (int N, float L, float dt, int nsteps)
 {
@@ -293,4 +292,157 @@ void diffusion_2d_compare (int N, float L, float dt, int nsteps)
     std::cout << "Applying the Cuthill-McKee algorithm: " << std::endl;
     std::cout << "Execution duration = " << duration_s.count() << "s" << std::endl;
     std::cout << std::endl;
+}
+
+/* Function: diffusion_2d_irregular
+ *
+ * Inputs: X - number of grid points in the X direction
+ *         Y - number of grid points in the Y direction
+ *         L - size of the grid
+ *         dt - time step
+ *         nsteps - number of time steps
+ *         R - matrix[N-2, nsteps] in order to save U at each step
+ *         apply_cuthill_mckee - applies the Cuthill-McKee algorithm to H
+ *                               in order to improve performance
+ *
+ *  C inversed shape:
+ *   _____________
+ *   |           |
+ *   |           |
+ *   |_____      |
+ *         |     |
+ *         |     |
+ *   ______|     |
+ *   |           |
+ *   |           |
+ *   |___________|
+ *
+ *   Constraint: X = Y + 3, where X = {9, 11, 13, ...}
+ *
+ * Finite Difference Method for numerically solving the
+ * Heat Equation in 2 dimensions
+ */
+void diffusion_2d_irregular (int X, int Y, float L, float dt, int nsteps, Eigen::MatrixXf& R, bool apply_cuthill_mckee)
+{
+    // Numerical parameters, assuming heat coefficient = 1
+    int N = X*Y-(pow(Y, 2)/9);         // Total number of grid points considered, N = X*Y-((Y^2)/9)
+    float dx = L/X;                    // Grid spacing, assuming dy = dx
+    float a = 1 + ((2*dt)/pow(dx, 2)); // Diagonal coefficient
+    float c = -dt/(2*pow(dx, 2));      // Offdiagonal coefficient
+    float d = 1 - (2*(dt/pow(dx, 2))); // Auxiliary coefficient used to solve b
+
+    // Initializing matrice and vectors
+    Eigen::MatrixXf H = Eigen::MatrixXf::Zero(N, N);
+    Eigen::VectorXf U = Eigen::VectorXf::Zero(N);
+    Eigen::VectorXf b = Eigen::VectorXf::Zero(N);
+    // Auxiliary matrix
+    Eigen::MatrixXf M = Eigen::MatrixXf::Zero(N, N);
+
+    // for (int i = 0; i < N-2; ++i)
+    // {
+    //     // Boundary conditions, assuming homogeneous dirichlet conditions
+    //     // u(0, y, t) = u(n, y, t) = 0 and
+    //     // u(x, 0, t) = u(x, n, t) = 0
+    //     if ((i < n) || (i > N-2-n)) U[i] = 0;
+    //     else {
+    //         if ((i % n) == 0)
+    //         {
+    //             U[i-1] = 0;
+    //             U[i] = 0;
+    //         } else {
+    //             // Initial condition, assuming u(x, y, 0) = 2x + 2y
+    //             U[i] = dx + dt;
+    //         }
+    //     }
+    // }
+
+    // 1. Strategy
+    // We start by considering the following strategy:
+    // if X = 9 and Y = 12
+    // U = [U_1_1, U_1_2, U_1_3, U_1_4, U_2_4, U_2_3, U_2_2, ...,
+    // U_1_9, U_1_10, U_1_11, U_1_12]
+
+    // Defining H
+    // H = a*Eigen::MatrixXf::Identity(N, N);
+    // for(int i = 0; i < N; ++i)
+    // {
+
+    // }
+
+    // Defining M
+    // M = d*Eigen::MatrixXf::Identity(N-2, N-2);
+    // M.topRightCorner(N-3, N-3) += -c*Eigen::MatrixXf::Identity(N-3, N-3);
+    // M.bottomLeftCorner(N-3, N-3) += -c*Eigen::MatrixXf::Identity(N-3, N-3);
+    // M.topRightCorner(N-2-n, N-2-n) += -c*Eigen::MatrixXf::Identity(N-2-n, N-2-n);
+    // M.bottomLeftCorner(N-2-n, N-2-n) += -c*Eigen::MatrixXf::Identity(N-2-n, N-2-n);
+
+    // // Removing some elements from the offdiagonals at positions
+    // // (n, n-1), (n-1, n) and so on
+    // for (int i = 0; i < N-2; ++i)
+    // {
+    //     if ((i % n) == 0 && (i > 0))
+    //     {
+    //         H(i, i-1) = 0;
+    //         H(i-1, i) = 0;
+    //         M(i, i-1) = 0;
+    //         M(i-1, i) = 0;
+    //     }
+    // }
+
+    // // std::cout << "H = " << std::endl;
+    // // std::cout << H << std::endl;
+    // // std::cout << "M = " << std::endl;
+    // // std::cout << M << std::endl;
+
+    // // Applying the Cuthill-McKee algorithm to H
+    // if (apply_cuthill_mckee)
+    // {
+    //     Eigen::MatrixXf P = Eigen::MatrixXf::Zero(N-2, N-2);
+    //     Eigen::MatrixXf R = Eigen::MatrixXf::Zero(N-2, N-2);
+    //     run_algorithm(H, P, R);
+
+    //     // std::cout << "H = " << std::endl;
+    //     // std::cout << H << std::endl;
+    //     // std::cout << "R = " << std::endl;
+    //     // std::cout << R << std::endl;
+    //     H = R;
+    //     M = (P*M*P.transpose());
+    // }
+
+    // for (int m = 0; m < nsteps; ++m)
+    // {
+    //     // std::cout << "U[m] = " << std::endl;
+    //     // std::cout << U << std::endl;
+
+    //     // Mb = U (solving b for U at step m)
+    //     b = M.partialPivLu().solve(U);
+
+    //     // std::cout << "b[m] = " << std::endl;
+    //     // std::cout << b << std::endl;
+
+    //     // Solving the system of eq. for m+1
+    //     // HU = b
+    //     U = H.partialPivLu().solve(b);
+
+    //     // for (int i = 0; i < N-2; ++i)
+    //     // {
+    //     //     // Solving b for m
+    //     //     U[i] = H.row(i)*b;
+    //     // }
+
+    //     // Boundary conditions
+    //     for (int i = 0; i < N-2; ++i)
+    //     {
+    //         if ((i < n) || (i > N-2-n)) U[i] = 0;
+    //         else {
+    //             if ((i % n) == 0)
+    //             {
+    //                 U[i-1] = 0;
+    //                 U[i] = 0;
+    //             }
+    //         }
+    //     }
+
+    //     R.col(m) = U;
+    // }
 }
