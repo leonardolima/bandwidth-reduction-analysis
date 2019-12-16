@@ -9,6 +9,7 @@
 #include <cmath>
 #include <string>
 #include <chrono>
+#include <map>
 #include <Eigen/Dense>
 #include "bandwidth_minimization.h"
 #include "io.h"
@@ -294,6 +295,72 @@ void diffusion_2d_compare (int N, float L, float dt, int nsteps)
     std::cout << std::endl;
 }
 
+/* Function: map_to_U
+ * Inputs:
+ *         X - number of grid points in the X direction
+ *         Y - number of grid points in the Y direction
+ *
+ * Computes a map (i,j) -> position of grid point on vector U
+ */
+void map_to_U (int X, int Y, std::map<std::pair<int, int>, int>& m)
+{
+    int index_U = 0;
+
+    // First submatrix (bottom part)
+    for (int k = 0; k < X; ++k)
+    {
+        if (k % 2 == 0)
+        {
+            for (int l = 0; l < (int)Y/3; ++l)
+            {
+                m[{k, l}] = index_U++;
+            }
+
+        } else {
+            for (int l = (int)((Y/3)-1); l >= 0; --l)
+            {
+                m[{k, l}] = index_U++;
+            }
+        }
+    }
+
+    // Second submatrix (middle part)
+    for (int l = (int)((Y/3)+1); l < (int)((2*(Y/3))+1); ++l)
+    {
+        if (l % 2 == 0)
+        {
+            for (int k = X-1; k >= (int)(X/2); --k)
+            {
+                m[{k, l}] = index_U++;
+            }
+
+        } else {
+            for (int k = (int)(X/2); k < X; ++k)
+            {
+                m[{k, l}] = index_U++;
+            }
+        }
+    }
+
+    // Third submatrix (top part)
+    for (int k = X-1; k = 0; --k)
+    {
+        if (k % 2 == 0)
+        {
+            for (int l = (int)((2*(Y/3))+1); l < Y; ++l)
+            {
+                m[{k, l}] = index_U++;
+            }
+
+        } else {
+            for (int l = Y-1; l >= (int)((2*(Y/3))+1); --l)
+            {
+                m[{k, l}] = index_U++;
+            }
+        }
+    }
+}
+
 /* Function: diffusion_2d_irregular
  *
  * Inputs: X - number of grid points in the X direction
@@ -325,18 +392,19 @@ void diffusion_2d_compare (int N, float L, float dt, int nsteps)
 void diffusion_2d_irregular (int X, int Y, float L, float dt, int nsteps, Eigen::MatrixXf& R, bool apply_cuthill_mckee)
 {
     // Numerical parameters, assuming heat coefficient = 1
-    int N = X*Y-(pow(Y, 2)/9);         // Total number of grid points considered, N = X*Y-((Y^2)/9)
-    float dx = L/X;                    // Grid spacing, assuming dy = dx
-    float a = 1 + ((2*dt)/pow(dx, 2)); // Diagonal coefficient
-    float c = -dt/(2*pow(dx, 2));      // Offdiagonal coefficient
-    float d = 1 - (2*(dt/pow(dx, 2))); // Auxiliary coefficient used to solve b
+    int N = (int)(2/3)*(X*Y)+((int)(X/2)*(Y/3)); // Total number of grid points considered
+    int n = (int)sqrt(N);
+    float dx = L/X;                              // Grid spacing, assuming dy = dx
+    float a = 1 + ((2*dt)/pow(dx, 2));           // Diagonal coefficient
+    float c = -dt/(2*pow(dx, 2));                // Offdiagonal coefficient
+    float d = 1 - (2*(dt/pow(dx, 2)));           // Auxiliary coefficient used to solve b
 
     // Initializing matrice and vectors
-    Eigen::MatrixXf H = Eigen::MatrixXf::Zero(N, N);
-    Eigen::VectorXf U = Eigen::VectorXf::Zero(N);
-    Eigen::VectorXf b = Eigen::VectorXf::Zero(N);
+    Eigen::MatrixXf H = Eigen::MatrixXf::Zero(n, n);
+    Eigen::VectorXf U = Eigen::VectorXf::Zero(n);
+    Eigen::VectorXf b = Eigen::VectorXf::Zero(n);
     // Auxiliary matrix
-    Eigen::MatrixXf M = Eigen::MatrixXf::Zero(N, N);
+    Eigen::MatrixXf M = Eigen::MatrixXf::Zero(n, n);
 
     // for (int i = 0; i < N-2; ++i)
     // {
@@ -356,25 +424,50 @@ void diffusion_2d_irregular (int X, int Y, float L, float dt, int nsteps, Eigen:
     //     }
     // }
 
-    // 1. Strategy
-    // We start by considering the following strategy:
-    // if X = 9 and Y = 12
-    // U = [U_1_1, U_1_2, U_1_3, U_1_4, U_2_4, U_2_3, U_2_2, ...,
-    // U_1_9, U_1_10, U_1_11, U_1_12]
+    // std::map<std::pair<int, int>, int> U_map;
+    // map_to_U(X, Y, U_map);
 
-    // Defining H
-    // H = a*Eigen::MatrixXf::Identity(N, N);
-    // for(int i = 0; i < N; ++i)
+    // // Defining H
+    // H = a*Eigen::MatrixXf::Identity(n, n);
+    // for (auto it = U_map.begin(); it != U_map.end(); ++it)
     // {
+    //     std::pair<int, int> p = it->first;
+    //     int& row = it->second;
 
+    //     std::pair<int, int> p1;
+    //     std::pair<int, int> p2;
+    //     std::pair<int, int> p3;
+    //     std::pair<int, int> p4;
+
+    //     if (p.first+1 < X)
+    //     {
+    //         p1 = std::make_pair(p.first+1, p.second);
+    //         int U1 = m.find(p1);
+    //         H(row, U1) = c;
+    //     }
+
+    //     if (p.first+1 < X)
+    //     {
+    //         p2 = std::make_pair(p.first, p.second+1);
+    //         int U2 = m.find(p2);
+    //     }
+
+    //     if (p.first > 0)
+    //     {
+    //         p3 = std::make_pair(p.first-1, p.second);
+    //     }
+    //     if (p.second > 0)
+    //     {
+    //         p4 = std::make_pair(p.first, p.second-1);
+    //     }
     // }
 
-    // Defining M
-    // M = d*Eigen::MatrixXf::Identity(N-2, N-2);
-    // M.topRightCorner(N-3, N-3) += -c*Eigen::MatrixXf::Identity(N-3, N-3);
-    // M.bottomLeftCorner(N-3, N-3) += -c*Eigen::MatrixXf::Identity(N-3, N-3);
-    // M.topRightCorner(N-2-n, N-2-n) += -c*Eigen::MatrixXf::Identity(N-2-n, N-2-n);
-    // M.bottomLeftCorner(N-2-n, N-2-n) += -c*Eigen::MatrixXf::Identity(N-2-n, N-2-n);
+    // // Defining M
+    // // M = d*Eigen::MatrixXf::Identity(N-2, N-2);
+    // // M.topRightCorner(N-3, N-3) += -c*Eigen::MatrixXf::Identity(N-3, N-3);
+    // // M.bottomLeftCorner(N-3, N-3) += -c*Eigen::MatrixXf::Identity(N-3, N-3);
+    // // M.topRightCorner(N-2-n, N-2-n) += -c*Eigen::MatrixXf::Identity(N-2-n, N-2-n);
+    // // M.bottomLeftCorner(N-2-n, N-2-n) += -c*Eigen::MatrixXf::Identity(N-2-n, N-2-n);
 
     // // Removing some elements from the offdiagonals at positions
     // // (n, n-1), (n-1, n) and so on
