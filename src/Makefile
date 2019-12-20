@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -I /usr/local/include/eigen3 -std=c++0x -Wall -pedantic-errors -g
+CXXFLAGS = -I /usr/local/include/eigen3 -std=c++17 -Wall -pedantic-errors -g
 
 SRCS = main.cpp bandwidth_minimization.cpp gauss_jordan.cpp tridiagonal.cpp crank_nicolson.cpp lu_decomposition.cpp io.cpp compare_solvers.cpp
 OBJS = ${SRCS:.cpp=.o}
