@@ -495,17 +495,16 @@ void diffusion_2d_irregular (int X, int Y, float L, float dt, int nsteps, Eigen:
         }
     }
 
+    // std::cout << "H = " << std::endl;
+    // std::cout << H << std::endl;
+
     // // Applying the Cuthill-McKee algorithm to H
     if (apply_cuthill_mckee)
     {
         Eigen::MatrixXf P = Eigen::MatrixXf::Zero(N, N);
         Eigen::MatrixXf R = Eigen::MatrixXf::Zero(N, N);
-        // run_algorithm(H, P, R);
+        run_algorithm(H, P, R);
 
-        // std::cout << "H = " << std::endl;
-        // std::cout << H << std::endl;
-        // std::cout << "R = " << std::endl;
-        // std::cout << R << std::endl;
         H = R;
         M = (P*M*P.transpose());
     }
@@ -565,26 +564,30 @@ void diffusion_2d_irregular (int X, int Y, float L, float dt, int nsteps, Eigen:
  */
 void diffusion_2d_irregular_compare (int X, int Y, float L, float dt, int nsteps)
 {
-    int N = ((2*X*Y)/3)+((X/2)*(Y/3));
-    Eigen::MatrixXf R = Eigen::MatrixXf::Zero(N, nsteps);
+    for (int i = nsteps; i <= 5000; i=i+200)
+    {
+        std::cout << "nsteps = " << i << std::endl;
+        int N = ((2*X*Y)/3)+((X/2)*(Y/3));
+        Eigen::MatrixXf R = Eigen::MatrixXf::Zero(N, i);
 
-    auto start = std::chrono::high_resolution_clock::now();
+        auto start = std::chrono::high_resolution_clock::now();
 
-    diffusion_2d_irregular(X, Y, L, dt, nsteps, R, false);
+        diffusion_2d_irregular(X, Y, L, dt, i, R, false);
 
-    auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration<float>(stop - start);
-    auto duration_s = std::chrono::duration_cast<std::chrono::seconds>(duration);
-    std::cout << "Execution time (without applying CM) = " << duration_s.count() << "s" << std::endl;
-    std::cout << std::endl;
+        auto stop = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration<float>(stop - start);
+        auto duration_s = std::chrono::duration_cast<std::chrono::seconds>(duration);
+        std::cout << "Execution time (without applying CM) = " << duration_s.count() << "s" << std::endl;
+        std::cout << std::endl;
 
-    start = std::chrono::high_resolution_clock::now();
+        start = std::chrono::high_resolution_clock::now();
 
-    diffusion_2d_irregular(X, Y, L, dt, nsteps, R, true);
+        diffusion_2d_irregular(X, Y, L, dt, i, R, true);
 
-    stop = std::chrono::high_resolution_clock::now();
-    duration = std::chrono::duration<float>(stop - start);
-    duration_s = std::chrono::duration_cast<std::chrono::seconds>(duration);
-    std::cout << "Execution time (applying CM) = " << duration_s.count() << "s" << std::endl;
-    std::cout << std::endl;
+        stop = std::chrono::high_resolution_clock::now();
+        duration = std::chrono::duration<float>(stop - start);
+        duration_s = std::chrono::duration_cast<std::chrono::seconds>(duration);
+        std::cout << "Execution time (applying CM) = " << duration_s.count() << "s" << std::endl;
+        std::cout << std::endl;
+    }
 }

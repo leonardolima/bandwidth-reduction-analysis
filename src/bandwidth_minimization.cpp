@@ -90,24 +90,28 @@ int node_index (const Eigen::MatrixXf& P, int label)
  */
 void nodal_numbering (const Eigen::MatrixXf& A, Eigen::MatrixXf& P, const std::vector<int>& rows_deg)
 {
-    unsigned int new_label = 0;
+    unsigned int new_label = 1;
+
+    // Labeling unconnected nodes
+    for(int j = 0; j < A.cols(); ++j)
+    {
+        if (rows_deg[j] == 0) P(new_label++, j) = 1; // Update matrix P accordingly
+    }
 
     // 3. For every node we (i) list the adjacent nodes (ii) sort them in ascending order
     // of degree (iii) label them uniquely and accordingly (2, 3, ...)
-    for(int label = 0; label < A.cols(); ++label)
+    for(int j = 0; j < A.cols(); ++j)
     {
-        int node_row_index = node_index(P, label);
-
-        std::cout << "node_row_index = " << node_row_index << std::endl;
-        Eigen::VectorXf node_row = A.row(node_row_index);
-        node_row[node_row_index] = 0; // Diagonal element should not be considered
-
-        std::vector<std::pair<int, int>> sorted_rows_deg = sort_rows_deg(node_row, rows_deg, P);
-
-        for (std::vector<std::pair<int, int>>::size_type j = 0; j < sorted_rows_deg.size(); ++j)
+        if (rows_deg[j] > 0)
         {
-            ++new_label;
-            P(new_label, sorted_rows_deg[j].second) = 1; // Update matrix P accordingly
+            int node_row_index = node_index(P, j);
+            Eigen::VectorXf node_row = A.row(node_row_index);
+            std::vector<std::pair<int, int>> sorted_rows_deg = sort_rows_deg(node_row, rows_deg, P);
+
+            for (std::vector<std::pair<int, int>>::size_type j = 0; j < sorted_rows_deg.size(); ++j)
+            {
+                P(new_label++, sorted_rows_deg[j].second) = 1; // Update matrix P accordingly
+            }
         }
     }
 }
@@ -124,9 +128,9 @@ int matrix_deg (const Eigen::MatrixXf& R)
 {
     std::vector<int> rows_deg(R.rows(), 0);
 
-    for(int j = 0; j < R.cols(); ++j)
+    for (int i = 0; i < R.rows(); ++i)
     {
-        for (int i = 0; i < R.rows(); ++i)
+        for(int j = 0; j < R.cols(); ++j)
         {
             if (R(i,j) != 0 && i != j) rows_deg[i] += 1;
         }
@@ -135,6 +139,31 @@ int matrix_deg (const Eigen::MatrixXf& R)
     auto max_deg = *std::max_element(rows_deg.begin(), rows_deg.end());
 
     return max_deg;
+}
+
+/* Function: matrix_bandwidth
+ *
+ * Inputs:
+ *         R - resulting matrix after applying algorithm
+ *
+ * Outputs:
+ *         max_bandwidth - matrix bandwidth
+ */
+int matrix_bandwidth (const Eigen::MatrixXf& R)
+{
+    std::vector<int> rows_bandwidth(R.rows(), 0);
+
+    for (int i = 0; i < R.rows(); ++i)
+    {
+        for(int j = 0; j < R.cols(); ++j)
+        {
+            if (R(i,j) != 0 && i != j && (j-i) > rows_bandwidth[i]) rows_bandwidth[i] = j-i;
+        }
+    }
+
+    auto max_bandwidth = *std::max_element(rows_bandwidth.begin(), rows_bandwidth.end());
+
+    return max_bandwidth;
 }
 
 /* Function: compare_matrices
@@ -224,7 +253,15 @@ std::vector<int> select_starting_nodes (const Eigen::MatrixXf& A)
     // j is the original one. We should always keep in mind that
     // optimal starting nodes doesn't necessarely are the lowest
     // degree ones
-    auto min_deg = *std::min_element(rows_deg.begin(), rows_deg.end());
+    auto min_deg = std::numeric_limits<int>::max();
+
+    // We should not consider rows that only have a single element on
+    // the main diagonal when computing starting_nodes
+    for(std::vector<int>::size_type i = 0; i < rows_deg.size(); ++i)
+    {
+        if (rows_deg[i] > 0 && rows_deg[i] < min_deg) min_deg = rows_deg[i];
+    }
+
     for(std::vector<int>::size_type i = 0; i < rows_deg.size(); ++i)
     {
         if (rows_deg[i] == min_deg) starting_nodes.push_back(i);
@@ -262,6 +299,9 @@ void compute_matrices (const std::vector<int>& starting_nodes, const Eigen::Matr
         if (mat_deg < max_mat_deg) R = M;     // Keep matrix M with lowest degree
         P.setZero();                          // Clear P matrix
     }
+
+    // std::cout << "bandwidth(A) = " << matrix_bandwidth(A) << std::endl;
+    // std::cout << "bandwidth(R) = " << matrix_bandwidth(R) << std::endl;
 }
 
 /* Function: generate_binary_random_matrix
