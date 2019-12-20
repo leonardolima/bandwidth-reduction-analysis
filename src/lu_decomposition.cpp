@@ -1,6 +1,6 @@
 /******************************
  *                            *
- *    Leonardo Lima, 2019     *  
+ *    Leonardo Lima, 2019     *
  *                            *
 /******************************/
 
@@ -29,7 +29,7 @@ void ludcmp(Eigen::MatrixXf& a, Eigen::VectorXf& indx, double& d)
 
     d = 1.0;
 
-    for (i = 0; i < n; i++) 
+    for (i = 0; i < n; i++)
     {
         big = 0.0;
         for (j = 0; j < n; j++) if ((temp=fabs(a(i, j))) > big) big = temp;
@@ -82,9 +82,9 @@ void lubksb(const Eigen::MatrixXf& a, const Eigen::VectorXf& indx, Eigen::Vector
 {
     int i, ii = 0, ip, j;
     double sum;
-    
+
     int n = a.rows();
-    
+
     for (i = 0; i < n; i++) {
         ip = indx[i];
         sum = b[ip];
@@ -102,5 +102,3 @@ void lubksb(const Eigen::MatrixXf& a, const Eigen::VectorXf& indx, Eigen::Vector
         b[i] = sum/a(i, i);
     }
 }
-
-

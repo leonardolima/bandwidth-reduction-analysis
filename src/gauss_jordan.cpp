@@ -1,6 +1,6 @@
 /******************************
  *                            *
- *    Leonardo Lima, 2019     *  
+ *    Leonardo Lima, 2019     *
  *                            *
 /******************************/
 
@@ -35,7 +35,7 @@ bool check_if_inversible (const Eigen::MatrixXf& M)
  *
  * Inputs: M - original matrix
  *
- * Implementation of Gauss-Jordan's method. 
+ * Implementation of Gauss-Jordan's method.
  * The inverse of M is gradually built up in M itself.
  */
 void compute_inverse (Eigen::MatrixXf& M)

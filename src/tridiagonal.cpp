@@ -1,6 +1,6 @@
 /******************************
  *                            *
- *    Leonardo Lima, 2019     *  
+ *    Leonardo Lima, 2019     *
  *                            *
 /******************************/
 
@@ -16,7 +16,7 @@
  *         c - upper offdiagonal
  *         r - right hand side vector
  *
- * Numerical Recipes' implementation of a method for solving tridiagonal 
+ * Numerical Recipes' implementation of a method for solving tridiagonal
  * system of linear equations
  */
 void tridag(const Eigen::VectorXf& a, const Eigen::VectorXf& b, const Eigen::VectorXf& c, const Eigen::VectorXf& r, Eigen::VectorXf& u)
