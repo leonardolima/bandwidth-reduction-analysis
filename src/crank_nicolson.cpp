@@ -570,12 +570,12 @@ void diffusion_2d_irregular_compare (int X, int Y, float L, float dt, int nsteps
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    // diffusion_2d_irregular(X, Y, L, dt, nsteps, R, false);
+    diffusion_2d_irregular(X, Y, L, dt, nsteps, R, false);
 
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration<float>(stop - start);
     auto duration_s = std::chrono::duration_cast<std::chrono::seconds>(duration);
-    std::cout << "Execution duration = " << duration_s.count() << "s" << std::endl;
+    std::cout << "Execution time (without applying CM) = " << duration_s.count() << "s" << std::endl;
     std::cout << std::endl;
 
     start = std::chrono::high_resolution_clock::now();
@@ -585,7 +585,6 @@ void diffusion_2d_irregular_compare (int X, int Y, float L, float dt, int nsteps
     stop = std::chrono::high_resolution_clock::now();
     duration = std::chrono::duration<float>(stop - start);
     duration_s = std::chrono::duration_cast<std::chrono::seconds>(duration);
-    std::cout << "Applying the Cuthill-McKee algorithm: " << std::endl;
-    std::cout << "Execution duration = " << duration_s.count() << "s" << std::endl;
+    std::cout << "Execution time (applying CM) = " << duration_s.count() << "s" << std::endl;
     std::cout << std::endl;
 }

@@ -29,11 +29,11 @@ int main (void)
     // diffusion_2d_compare(N, L, dt, nsteps);
 
     // 2D irregular shape diffusion
-    int X = 22;
-    int Y = 25;
+    int X = 16;
+    int Y = 19;
     float L = 1;
     float dt = 5.e-4;
-    int nsteps = 620;
+    int nsteps = 4000;
     diffusion_2d_irregular_compare(X, Y, L, dt, nsteps);
 
     // compare solvers LU decomposition and tridiagonal
