@@ -12,6 +12,7 @@
 #include <map>
 #include <Eigen/Dense>
 #include "bandwidth_minimization.h"
+#include "gauss_jordan.h"
 #include "io.h"
 
 /* Function: diffusion_1d
@@ -411,6 +412,8 @@ void diffusion_2d_irregular (int X, int Y, float L, float dt, int nsteps, Eigen:
     // Auxiliary matrix
     Eigen::MatrixXf M = Eigen::MatrixXf::Zero(N, N);
 
+    std::cout << "N = " << N << std::endl;
+
     // for (int i = 0; i < N-2; ++i)
     // {
     //     // Boundary conditions, assuming homogeneous dirichlet conditions
@@ -466,6 +469,7 @@ void diffusion_2d_irregular (int X, int Y, float L, float dt, int nsteps, Eigen:
             if (p2_it != U_map.end())
             {
                 int U2 = p2_it->second;
+                // std::cout << "row = " << row << "; U2 = " << U2 << std::endl;
                 H(row, U2) = c;
                 M(row, U2) = -c;
             }
@@ -515,14 +519,16 @@ void diffusion_2d_irregular (int X, int Y, float L, float dt, int nsteps, Eigen:
         // std::cout << U << std::endl;
 
         // Mb = U (solving b for U at step m)
-        b = M.partialPivLu().solve(U);
+        // b = M.partialPivLu().solve(U);
+        gaussj_elim(M.inverse(), U, b);
 
         // std::cout << "b[m] = " << std::endl;
         // std::cout << b << std::endl;
 
         // Solving the system of eq. for m+1
         // HU = b
-        U = H.partialPivLu().solve(b);
+        //U = H.partialPivLu().solve(b);
+        gaussj_elim(H.inverse(), b, U);
 
         // for (int i = 0; i < N-2; ++i)
         // {
@@ -564,30 +570,26 @@ void diffusion_2d_irregular (int X, int Y, float L, float dt, int nsteps, Eigen:
  */
 void diffusion_2d_irregular_compare (int X, int Y, float L, float dt, int nsteps)
 {
-    for (int i = nsteps; i <= 5000; i=i+200)
-    {
-        std::cout << "nsteps = " << i << std::endl;
-        int N = ((2*X*Y)/3)+((X/2)*(Y/3));
-        Eigen::MatrixXf R = Eigen::MatrixXf::Zero(N, i);
+    int N = ((2*X*Y)/3)+((X/2)*(Y/3));
+    Eigen::MatrixXf R = Eigen::MatrixXf::Zero(N, nsteps);
 
-        auto start = std::chrono::high_resolution_clock::now();
+    auto start = std::chrono::high_resolution_clock::now();
 
-        diffusion_2d_irregular(X, Y, L, dt, i, R, false);
+    diffusion_2d_irregular(X, Y, L, dt, nsteps, R, false);
 
-        auto stop = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration<float>(stop - start);
-        auto duration_s = std::chrono::duration_cast<std::chrono::seconds>(duration);
-        std::cout << "Execution time (without applying CM) = " << duration_s.count() << "s" << std::endl;
-        std::cout << std::endl;
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration<float>(stop - start);
+    auto duration_s = std::chrono::duration_cast<std::chrono::seconds>(duration);
+    std::cout << "Execution time (without applying CM) = " << duration_s.count() << "s" << std::endl;
+    std::cout << std::endl;
 
-        start = std::chrono::high_resolution_clock::now();
+    start = std::chrono::high_resolution_clock::now();
 
-        diffusion_2d_irregular(X, Y, L, dt, i, R, true);
+    diffusion_2d_irregular(X, Y, L, dt, nsteps, R, true);
 
-        stop = std::chrono::high_resolution_clock::now();
-        duration = std::chrono::duration<float>(stop - start);
-        duration_s = std::chrono::duration_cast<std::chrono::seconds>(duration);
-        std::cout << "Execution time (applying CM) = " << duration_s.count() << "s" << std::endl;
-        std::cout << std::endl;
-    }
+    stop = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration<float>(stop - start);
+    duration_s = std::chrono::duration_cast<std::chrono::seconds>(duration);
+    std::cout << "Execution time (applying CM) = " << duration_s.count() << "s" << std::endl;
+    std::cout << std::endl;
 }

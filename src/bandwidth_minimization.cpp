@@ -300,6 +300,7 @@ void compute_matrices (const std::vector<int>& starting_nodes, const Eigen::Matr
         P.setZero();                          // Clear P matrix
     }
 
+    // std::cout << "dim(A) = " << A.rows() << "x" << A.cols() << std::endl;
     // std::cout << "bandwidth(A) = " << matrix_bandwidth(A) << std::endl;
     // std::cout << "bandwidth(R) = " << matrix_bandwidth(R) << std::endl;
 }
