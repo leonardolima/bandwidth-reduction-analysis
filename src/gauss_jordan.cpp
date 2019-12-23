@@ -109,3 +109,37 @@ void compute_inverse (Eigen::MatrixXf& M)
         }
     }
 }
+
+void gaussj_elim (const Eigen::MatrixXf& H, const Eigen::VectorXf& U, Eigen::VectorXf& b)
+{
+    Eigen::MatrixXf M = H;
+    M.conservativeResize(Eigen::NoChange, M.cols()+1);
+    M.col(H.cols()-1) = U;
+
+    int c, N = M.rows();
+    float p = 0;
+
+    for (int i = 0; i < N; ++i)
+    {
+        if (M(i,i) == 0)
+        {
+            c = 1;
+            while ((i + c) < N && M(i+c,i) == 0) c++;
+            if ((i + c) == N) break;
+
+            for (int j = i, k = 0; k <= N; ++k) std::swap(M(j, k), M(j+c, k));
+        }
+
+        for (int j = 0; j < N; ++j)
+        {
+            if (i != j)
+            {
+                p = M(j, i) / M(i, i);
+
+                for (int k = 0; k <= N; ++k) M(j, k) = M(j, k) - (M(i, k)) * p;
+            }
+        }
+    }
+
+    for (int i = 0; i < N; ++i) b[i] = M(i, N) / M(i, i);
+}
