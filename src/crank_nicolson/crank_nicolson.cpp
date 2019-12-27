@@ -13,7 +13,7 @@
 #include <Eigen/Dense>
 #include "bandwidth_minimization.h"
 #include "gauss_jordan.h"
-#include "io.h"
+#include "../io.h"
 
 /* Function: diffusion_1d
  *
@@ -62,17 +62,9 @@ void diffusion_1d (int N, float L, float dt, int nsteps, Eigen::MatrixXf& R)
     U[N-3] = 0;
     for (int i = 1; i < N-3; ++i) U[i] = 2*dx;
 
-    // std::cout << "T = " << std::endl;
-    // std::cout << T << std::endl << std::endl;
-
     // Defining auxiliary matrices A and B
     A = (I + (z/2)*T);
     B = (I - (z/2)*T);
-
-    // std::cout << "A = " << std::endl;
-    // std::cout << A << std::endl << std::endl;
-    // std::cout << "B = " << std::endl;
-    // std::cout << B << std::endl;
 
     for (int m = 0; m < nsteps; ++m)
     {
@@ -362,6 +354,8 @@ void map_to_U (int X, int Y, std::map<std::pair<int, int>, int>& m)
     }
 }
 
+// Auxiliary function
+// TODO: Move it somewhere else later
 void print_map(const std::map<std::pair<int, int>, int>& m)
 {
     for (const auto &[k, v] : m)
@@ -411,8 +405,6 @@ void diffusion_2d_irregular (int X, int Y, float L, float dt, int nsteps, Eigen:
     Eigen::VectorXf b = Eigen::VectorXf::Zero(N);
     // Auxiliary matrix
     Eigen::MatrixXf M = Eigen::MatrixXf::Zero(N, N);
-
-    std::cout << "N = " << N << std::endl;
 
     // for (int i = 0; i < N-2; ++i)
     // {
@@ -469,7 +461,6 @@ void diffusion_2d_irregular (int X, int Y, float L, float dt, int nsteps, Eigen:
             if (p2_it != U_map.end())
             {
                 int U2 = p2_it->second;
-                // std::cout << "row = " << row << "; U2 = " << U2 << std::endl;
                 H(row, U2) = c;
                 M(row, U2) = -c;
             }
@@ -498,9 +489,6 @@ void diffusion_2d_irregular (int X, int Y, float L, float dt, int nsteps, Eigen:
             }
         }
     }
-
-    // std::cout << "H = " << std::endl;
-    // std::cout << H << std::endl;
 
     // // Applying the Cuthill-McKee algorithm to H
     if (apply_cuthill_mckee)

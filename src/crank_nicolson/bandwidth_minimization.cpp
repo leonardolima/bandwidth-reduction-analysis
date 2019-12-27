@@ -92,13 +92,13 @@ void nodal_numbering (const Eigen::MatrixXf& A, Eigen::MatrixXf& P, const std::v
 {
     unsigned int new_label = 1;
 
-    // Labeling unconnected nodes
+    // 3. First we need to label unconnected nodes
     for(int j = 0; j < A.cols(); ++j)
     {
         if (rows_deg[j] == 0) P(new_label++, j) = 1; // Update matrix P accordingly
     }
 
-    // 3. For every node we (i) list the adjacent nodes (ii) sort them in ascending order
+    // 4. For every node we (i) list the adjacent nodes (ii) sort them in ascending order
     // of degree (iii) label them uniquely and accordingly (2, 3, ...)
     for(int j = 0; j < A.cols(); ++j)
     {

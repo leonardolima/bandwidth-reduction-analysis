@@ -9,7 +9,7 @@
 #include <chrono>
 #include "lu_decomposition.h"
 #include "tridiagonal.h"
-#include "io.h"
+#include "../io.h"
 
 /* Function: compare_lubksb_tridag
  *
