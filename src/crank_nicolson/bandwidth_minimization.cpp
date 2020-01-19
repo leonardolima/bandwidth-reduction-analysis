@@ -12,6 +12,7 @@
 #include <Eigen/Dense>
 #include "gauss_jordan.h"
 #include "tridiagonal.h"
+#include "../basic.h"
 
 /* Function: node_has_label
  *
@@ -139,31 +140,6 @@ int matrix_deg (const Eigen::MatrixXf& R)
     auto max_deg = *std::max_element(rows_deg.begin(), rows_deg.end());
 
     return max_deg;
-}
-
-/* Function: matrix_bandwidth
- *
- * Inputs:
- *         R - resulting matrix after applying algorithm
- *
- * Outputs:
- *         max_bandwidth - matrix bandwidth
- */
-int matrix_bandwidth (const Eigen::MatrixXf& R)
-{
-    std::vector<int> rows_bandwidth(R.rows(), 0);
-
-    for (int i = 0; i < R.rows(); ++i)
-    {
-        for(int j = 0; j < R.cols(); ++j)
-        {
-            if (R(i,j) != 0 && i != j && (j-i) > rows_bandwidth[i]) rows_bandwidth[i] = j-i;
-        }
-    }
-
-    auto max_bandwidth = *std::max_element(rows_bandwidth.begin(), rows_bandwidth.end());
-
-    return max_bandwidth;
 }
 
 /* Function: compare_matrices
@@ -300,9 +276,9 @@ void compute_matrices (const std::vector<int>& starting_nodes, const Eigen::Matr
         P.setZero();                          // Clear P matrix
     }
 
-    // std::cout << "dim(A) = " << A.rows() << "x" << A.cols() << std::endl;
-    // std::cout << "bandwidth(A) = " << matrix_bandwidth(A) << std::endl;
-    // std::cout << "bandwidth(R) = " << matrix_bandwidth(R) << std::endl;
+    std::cout << "dim(A) = " << A.rows() << "x" << A.cols() << std::endl;
+    std::cout << "bandwidth(A) = " << matrix_bandwidth(A) << std::endl;
+    std::cout << "bandwidth(R) = " << matrix_bandwidth(R) << std::endl;
 }
 
 /* Function: generate_binary_random_matrix

@@ -13,6 +13,7 @@
 #include <Eigen/Dense>
 #include "bandwidth_minimization.h"
 #include "gauss_jordan.h"
+#include "lu_decomposition.h"
 #include "../io.h"
 
 /* Function: diffusion_1d
@@ -511,22 +512,16 @@ void diffusion_2d_irregular (int X, int Y, float L, float dt, int nsteps, Eigen:
         // std::cout << U << std::endl;
 
         // Mb = U (solving b for U at step m)
-        // b = M.partialPivLu().solve(U);
-        gaussj_elim(M.inverse(), U, b);
+        if (apply_cuthill_mckee) band_solver(M, b, U);
+        else b = M.partialPivLu().solve(U);
 
         // std::cout << "b[m] = " << std::endl;
         // std::cout << b << std::endl;
 
         // Solving the system of eq. for m+1
         // HU = b
-        //U = H.partialPivLu().solve(b);
-        gaussj_elim(H.inverse(), b, U);
-
-        // for (int i = 0; i < N-2; ++i)
-        // {
-        //     // Solving b for m
-        //     U[i] = H.row(i)*b;
-        // }
+        if (apply_cuthill_mckee) band_solver(H, U, b);
+        else U = H.partialPivLu().solve(b);
 
         // Boundary conditions
         // for (int i = 0; i < N-2; ++i)

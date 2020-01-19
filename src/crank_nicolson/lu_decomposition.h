@@ -7,4 +7,6 @@ void ludcmp(Eigen::MatrixXf&, Eigen::VectorXf&, double&);
 
 void lubksb(const Eigen::MatrixXf&, const Eigen::VectorXf&, Eigen::VectorXf&);
 
+void band_solver (const Eigen::MatrixXf&, Eigen::VectorXf&, Eigen::VectorXf&);
+
 #endif
