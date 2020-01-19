@@ -1,0 +1,39 @@
+<!-- wp:paragraph -->
+<p>We are going to derive and implement a finite-difference method used for solving the heat equation.  </p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading {"level":3} -->
+<h3>Solving the 1D Heat Equation</h3>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Let's consider the following initial boundary value problem:</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:html -->
+$$ 
+  \left\{
+  \begin{cases}
+  \frac{\partial u(x,t)}{\partial t} = \frac{\partial^2 u(x,t)}{\partial x^2}, & (x,t)\in\]0,1\[\times\]0,T\] \\
+  u(0,t) = u(1,t) = 0, & t\in\[0,T\] \\
+  u(x,0) = 2x, & x\in\[0,1\]
+  \end{cases}
+$$
+<!-- /wp:html -->
+
+<!-- wp:paragraph -->
+<p>Since this is a continuous problem, in order to solve it computationally, we need to discretize it. Let's first define a computational grid, or mesh, $(x(i), t(m)$, where $x(i) = ih, 0 \leq i \leq N$. We define $N = \frac{1}{h}$, where $h$ is the mesh spacing in the $x$ direction. Similarly, we define $t(m) = mk$, where $k$ is the time step. Considering the continuous function $u(x,t)$, its correspondent discretized version is approximated by computing it at $u(x(i), t(m))$, denoted by $U(i,m)$ from now on.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>The next step is to discretize the governing equation. </p>
+<!-- /wp:paragraph -->
+
+<!-- wp:html -->
+$$ \frac{\partial u(x,t)}{\partial t} \approx \frac{u(x(i), t(m)) - u(x(i)-h, t(m))}{h} \approx \frac{U(i,m)-U(i-1,m)}{h} $$
+<!-- /wp:html -->
+
+
+<!-- wp:paragraph -->
+<p><strong>[1]</strong> Cuthill, E. and McKee, J., 1969, August. Reducing the bandwidth of sparse symmetric matrices. In&nbsp;<em>Proceedings of the 1969 24th national conference</em>&nbsp;(pp. 157-172). ACM.</p>
+<!-- /wp:paragraph -->
