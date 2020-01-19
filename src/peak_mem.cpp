@@ -78,9 +78,9 @@ void read_file (const std::string& file_name, Eigen::MatrixXf& A, std::vector<st
 
     while (std::getline(file, line))
     {
-        std::vector tokens = string_split(line, ' ');
+        std::vector<int> tokens = string_split(line, ' ');
 
-        A(i, i) = tokens[0];
+        A(i, i) = float(tokens[0]);
 
         for (std::vector<int>::size_type j = 1; j < tokens.size(); ++j)
         {

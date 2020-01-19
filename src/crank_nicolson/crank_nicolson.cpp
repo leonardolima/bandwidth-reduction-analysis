@@ -358,8 +358,12 @@ void map_to_U (int X, int Y, std::map<std::pair<int, int>, int>& m)
 // TODO: Move it somewhere else later
 void print_map(const std::map<std::pair<int, int>, int>& m)
 {
-    for (const auto &[k, v] : m)
+    for (const auto &it : m)
+    {
+        auto& k = it.first;
+        auto& v = it.second;
         std::cout << "m[" << k.first << ", " << k.second  << "] = (" << v << ") " << std::endl;
+    }
 }
 
 /* Function: diffusion_2d_irregular
