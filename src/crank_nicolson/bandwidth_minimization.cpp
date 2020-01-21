@@ -268,7 +268,7 @@ void compute_matrices (const std::vector<int>& starting_nodes, const Eigen::Matr
 
     for(std::vector<int>::size_type i = 0; i < starting_nodes.size(); ++i)
     {
-        P(0, starting_nodes[i]) = 1;          // Starting node is labeled as 1
+        P(0, starting_nodes[i]) = 1;          // Starting node is labeled as 0
         nodal_numbering(A, P, rows_deg);      // Execute algorithm on A
         M = (P*A*P.transpose());              // Compute resulting matrix M
         int mat_deg = matrix_deg(M);          // Compute resulting matrix degree
