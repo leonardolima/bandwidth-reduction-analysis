@@ -109,9 +109,9 @@ void nodal_numbering (const Eigen::MatrixXf& A, Eigen::MatrixXf& P, const std::v
             Eigen::VectorXf node_row = A.row(node_row_index);
             std::vector<std::pair<int, int>> sorted_rows_deg = sort_rows_deg(node_row, rows_deg, P);
 
-            for (std::vector<std::pair<int, int>>::size_type j = 0; j < sorted_rows_deg.size(); ++j)
+            for (std::vector<std::pair<int, int>>::size_type i = 0; i < sorted_rows_deg.size(); ++i)
             {
-                P(new_label++, sorted_rows_deg[j].second) = 1; // Update matrix P accordingly
+                P(new_label++, sorted_rows_deg[i].second) = 1; // Update matrix P accordingly
             }
         }
     }
