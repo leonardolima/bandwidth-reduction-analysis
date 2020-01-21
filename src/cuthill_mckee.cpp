@@ -6,26 +6,28 @@
 
 #include <iostream>
 #include <vector>
+#include <queue>
 #include <utility>
 #include <limits>
 #include <chrono>
 #include <Eigen/Dense>
+#include "basic.h"
 
-/* Function: node_has_label
+/* Function: node_label
  *
  * Inputs:
  *         P   - permutation matrix
  *         col - column's index
  *
  */
-bool node_has_label (const Eigen::MatrixXf& P, unsigned int col)
+int node_label (const Eigen::MatrixXf& P, unsigned int col)
 {
     for (int i = 0; i < P.rows(); ++i)
     {
-        if (P(i,col) != 0) return true;
+        if (P(i,col) != 0) return P(i, col);
     }
 
-    return false;
+    return -1; // Node doesn't have a label
 }
 
 /* Function: sort_rows_deg
@@ -46,7 +48,7 @@ std::vector<std::pair<int, int>> sort_rows_deg (const Eigen::VectorXf& node_row,
     {
         // We are not interested if the element is on the diagonal
         // or if the node already has a label
-        if (node_row[i] != 0 && !node_has_label(P, i))
+        if (node_row[i] != 0 && node_label(P, i) == -1)
         {
             std::pair<int, int> pair = std::make_pair(rows_deg[i], i);
             sorted_rows_deg.push_back(pair);
@@ -78,6 +80,46 @@ int node_index (const Eigen::MatrixXf& P, int label)
     return -1;
 }
 
+/* Function: check_constraints
+ *
+ * Inputs:
+ *         node  - node index \in [0, ..., N]
+ *         label - possible labeling at this step for the node
+ *         O     - dependency vector
+ *         P     - permutation matrix
+ *
+ * Checks if the label respect the constraints or not
+ *
+ */
+bool check_constraints (int node, int label, const std::vector<std::vector<int>>& O, Eigen::MatrixXf& P)
+{
+    // std::cout << "Checking node = " << node << std::endl;
+
+    // for (std::vector<std::vector<int>>::size_type i; i < O.size(); ++i)
+    // {
+    //     std::cout << "O[" << i << "] = ";
+    //     for (std::vector<int>::size_type j; j < O[i].size(); ++j) std::cout << O[i][j] << " ";
+    //     std::cout << std::endl;
+    // }
+
+    for (std::vector<int>::size_type j; j < O[node].size(); ++j)
+    {
+        int adj_node_label = node_label(P, O[node][j]);
+        if (adj_node_label != -1 && adj_node_label < label) return false;
+    }
+
+    return true;
+}
+
+void apply_label_to_node (Eigen::MatrixXf& P, const std::vector<std::vector<int>>& O, std::queue<int>& q,
+                          int node, int& new_label)
+{
+    if (check_constraints(node, new_label, O, P)) {
+        P(new_label++, node) = 1;
+        q.pop();
+    }
+}
+
 /* Function: nodal_numbering
  *
  * Inputs:
@@ -85,11 +127,19 @@ int node_index (const Eigen::MatrixXf& P, int label)
  *         P        - permutation matrix
  *         rows_deg - vector of nodes' degree
  *
+ * Adapted version of the original algorithm in order to consider the constraints imposed.
+ * When labeling the adjacent nodes, we check if their labeling respect the constraints
+ * or not. If so, we label them accordingly. Otherwise we keep a queue with all the remaining
+ * nodes that haven't been labeled already, checking again at each step (i.e., when considering
+ * other nodes if labeling is possible)
+ *
  */
 void nodal_numbering (const Eigen::MatrixXf& A, Eigen::MatrixXf& P, const std::vector<int>& rows_deg,
-                      std::vector<std::vector<int>>& O)
+                      const std::vector<std::vector<int>>& O)
 {
-    unsigned int new_label = 1;
+    int new_label = 1;
+
+    std::queue<int> q;
 
     // 3. First we need to label unconnected nodes
     for(int j = 0; j < A.cols(); ++j)
@@ -102,15 +152,20 @@ void nodal_numbering (const Eigen::MatrixXf& A, Eigen::MatrixXf& P, const std::v
     // ordering O
     for(int j = 0; j < A.cols(); ++j)
     {
+        // Apply label to first element on the queue
+        if (!q.empty()) apply_label_to_node(P, O, q, q.front(), new_label);
+
         if (rows_deg[j] > 0)
         {
             int node_row_index = node_index(P, j);
             Eigen::VectorXf node_row = A.row(node_row_index);
             std::vector<std::pair<int, int>> sorted_rows_deg = sort_rows_deg(node_row, rows_deg, P);
 
-            for (std::vector<std::pair<int, int>>::size_type j = 0; j < sorted_rows_deg.size(); ++j)
+            for (std::vector<std::pair<int, int>>::size_type i = 0; i < sorted_rows_deg.size(); ++i)
             {
-                P(new_label++, sorted_rows_deg[j].second) = 1; // Update matrix P accordingly
+                int cur_node = sorted_rows_deg[i].second;
+                if (check_constraints(cur_node, new_label, O, P)) P(new_label++, cur_node) = 1;
+                else q.push(cur_node);
             }
         }
     }
@@ -141,31 +196,6 @@ int matrix_deg (const Eigen::MatrixXf& R)
     return max_deg;
 }
 
-/* Function: matrix_bandwidth
- *
- * Inputs:
- *         R - resulting matrix after applying algorithm
- *
- * Outputs:
- *         max_bandwidth - matrix bandwidth
- */
-int matrix_bandwidth (const Eigen::MatrixXf& R)
-{
-    std::vector<int> rows_bandwidth(R.rows(), 0);
-
-    for (int i = 0; i < R.rows(); ++i)
-    {
-        for(int j = 0; j < R.cols(); ++j)
-        {
-            if (R(i,j) != 0 && i != j && (j-i) > rows_bandwidth[i]) rows_bandwidth[i] = j-i;
-        }
-    }
-
-    auto max_bandwidth = *std::max_element(rows_bandwidth.begin(), rows_bandwidth.end());
-
-    return max_bandwidth;
-}
-
 /* Function: compute_rows_deg
  *
  * Inputs:
@@ -192,48 +222,6 @@ std::vector<int> compute_rows_deg (const Eigen::MatrixXf& A)
     return rows_deg;
 }
 
-/* Function: select_starting_nodes
- *
- * Inputs:
- *         A - original matrix representing the graph
- *
- * Outputs:
- *         starting_nodes - indexes of starting nodes where we
- *                          consider the lowest degree ones
- *                          (this approach is not always optimal)
- *
- */
-std::vector<int> select_starting_nodes (const Eigen::MatrixXf& A)
-{
-    std::vector<int> starting_nodes;
-
-    // 1. Compute degree of every row, where deg(i) = \Sum_{j!=i} a_{ij} != 0
-    std::vector<int> rows_deg = compute_rows_deg(A);
-
-    // 2. Select starting node (usually the one with minimum degree)
-    // Permuting rows and columns of matrix A is done using the
-    // permutation matrix P. P has one non-zero unit element in each
-    // row and column. For row i: p_{ij} i is the new node label and
-    // j is the original one. We should always keep in mind that
-    // optimal starting nodes doesn't necessarely are the lowest
-    // degree ones
-    auto min_deg = std::numeric_limits<int>::max();
-
-    // We should not consider rows that only have a single element on
-    // the main diagonal when computing starting_nodes
-    for(std::vector<int>::size_type i = 0; i < rows_deg.size(); ++i)
-    {
-        if (rows_deg[i] > 0 && rows_deg[i] < min_deg) min_deg = rows_deg[i];
-    }
-
-    for(std::vector<int>::size_type i = 0; i < rows_deg.size(); ++i)
-    {
-        if (rows_deg[i] == min_deg) starting_nodes.push_back(i);
-    }
-
-    return starting_nodes;
-}
-
 /* Function: compute_matrices
  *
  * Inputs: starting nodes - possible starting nodes considering the lowest
@@ -245,32 +233,16 @@ std::vector<int> select_starting_nodes (const Eigen::MatrixXf& A)
  * Perform the nodal numbering algorithm in each one of the lowest degree nodes
  * and check which one generates the lowest degree resulting matrix
  */
-void compute_matrices (const std::vector<int>& starting_nodes, const Eigen::MatrixXf& A,
-                       Eigen::MatrixXf& P, Eigen::MatrixXf& R, std::vector<std::vector<int>>& O)
+void compute_matrices (const Eigen::MatrixXf& A, Eigen::MatrixXf& P, Eigen::MatrixXf& R,
+                       const std::vector<std::vector<int>>& O)
 {
-    int max_mat_deg = std::numeric_limits<int>::max(); // max_mat_deg = \infty
-
-    Eigen::MatrixXf M = Eigen::MatrixXf::Zero(A.rows(), A.cols());
-
     std::vector<int> rows_deg = compute_rows_deg(A);
 
-    for(std::vector<int>::size_type i = 0; i < starting_nodes.size(); ++i)
-    {
-        P(0, starting_nodes[i]) = 1;          // Starting node is labeled as 1
-        nodal_numbering(A, P, rows_deg, O);   // Execute algorithm on A
-        M = (P*A*P.transpose());              // Compute resulting matrix M
-        int mat_deg = matrix_deg(M);          // Compute resulting matrix degree
-        if (mat_deg < max_mat_deg) R = M;     // Keep matrix M with lowest degree
-        P.setZero();                          // Clear P matrix
-    }
+    P(0, 0) = 1;                          // Starting node = 0 is labeled as 0
+    nodal_numbering(A, P, rows_deg, O);   // Execute algorithm on A
+    R = (P*A*P.transpose());              // Compute resulting matrix R
 
-    // std::cout << "dim(A) = " << A.rows() << "x" << A.cols() << std::endl;
-    // std::cout << "bandwidth(A) = " << matrix_bandwidth(A) << std::endl;
-    // std::cout << "bandwidth(R) = " << matrix_bandwidth(R) << std::endl;
-}
-
-void run_algorithm (const Eigen::MatrixXf& A, Eigen::MatrixXf& P, Eigen::MatrixXf& R, std::vector<std::vector<int>>& O)
-{
-    std::vector<int> starting_nodes = select_starting_nodes(A);
-    compute_matrices(starting_nodes, A, P, R, O);
+    std::cout << "dim(A) = " << A.rows() << "x" << A.cols() << std::endl;
+    std::cout << "bandwidth(A) = " << matrix_bandwidth(A) << std::endl;
+    std::cout << "bandwidth(R) = " << matrix_bandwidth(R) << std::endl;
 }

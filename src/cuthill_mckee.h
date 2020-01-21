@@ -3,6 +3,6 @@
 
 #include <Eigen/Dense>
 
-void run_algorithm (const Eigen::MatrixXf&, Eigen::MatrixXf&, Eigen::MatrixXf&, std::vector<std::vector<int>>&);
+void compute_matrices (const Eigen::MatrixXf&, Eigen::MatrixXf&, Eigen::MatrixXf&, const std::vector<std::vector<int>>&);
 
 #endif

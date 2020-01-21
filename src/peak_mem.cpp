@@ -93,9 +93,17 @@ void read_file (const std::string& file_name, Eigen::MatrixXf& A, std::vector<st
     }
 
     file.close();
+}
 
-    std::cout << "A = " << std::endl;
-    std::cout << A << std::endl;
+void convert_vector(const std::vector<std::vector<int>>& O, std::vector<std::vector<int>>& new_O)
+{
+    for (std::vector<std::vector<int>>::size_type i = 0; i < O.size(); ++i)
+    {
+        for (std::vector<int>::size_type j = 0; j < O[i].size(); ++j)
+        {
+            new_O[O[i][j]].push_back(i);
+        }
+    }
 }
 
 void peak_mem(const std::string& file_name)
@@ -105,8 +113,21 @@ void peak_mem(const std::string& file_name)
     // Adjacency matrix representing the graph (symmetric)
     Eigen::MatrixXf A = Eigen::MatrixXf::Identity(N, N);
 
-    // Vector corresponding to the ordering
+    // Permutation matrix (in case of Cuthill-McKee algorithm)
+    Eigen::MatrixXf P = Eigen::MatrixXf::Zero(N, N);
+
+    // Resulting matrix
+    Eigen::MatrixXf R = Eigen::MatrixXf::Zero(N, N);
+
+    // Vector corresponding to the ordering L_x > [L_yi]
     std::vector<std::vector<int>> O(N);
 
+    // Vector corresponding to the ordering L_x < [L_yi]
+    std::vector<std::vector<int>> new_O(N);
+
     read_file(file_name, A, O);
+
+    convert_vector(O, new_O);
+
+    compute_matrices(A, P, R, new_O);
 }
