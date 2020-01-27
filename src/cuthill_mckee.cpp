@@ -85,7 +85,7 @@ int node_index (const Eigen::MatrixXf& P, int label)
  * Inputs:
  *         node  - node index \in [0, ..., N]
  *         label - possible labeling at this step for the node
- *         O     - dependency vector
+ *         O     - vector corresponding to the constraint ordering L_x < [L_yi]
  *         P     - permutation matrix
  *
  * Checks if the label respect the constraints or not
@@ -126,6 +126,7 @@ void apply_label_to_node (Eigen::MatrixXf& P, const std::vector<std::vector<int>
  *         A        - original matrix
  *         P        - permutation matrix
  *         rows_deg - vector of nodes' degree
+ *         O        - vector corresponding to the constraint ordering L_x < [L_yi]
  *
  * Adapted version of the original algorithm in order to consider the constraints imposed.
  * When labeling the adjacent nodes, we check if their labeling respect the constraints
@@ -224,14 +225,13 @@ std::vector<int> compute_rows_deg (const Eigen::MatrixXf& A)
 
 /* Function: compute_matrices
  *
- * Inputs: starting nodes - possible starting nodes considering the lowest
- *                          degree strategy (keep in mind it's not always optimal)
+ * Inputs:
  *         A              - original matrix representing the graph
  *         P              - permutation matrix
  *         R              - lowest degree resulting matrix (i.e. P*A*P^T)
+ *         O              - vector corresponding to the constraint ordering L_x < [L_yi]
  *
- * Perform the nodal numbering algorithm in each one of the lowest degree nodes
- * and check which one generates the lowest degree resulting matrix
+ * Perform nodal numbering algorithm considering ordering constraint
  */
 void compute_matrices (const Eigen::MatrixXf& A, Eigen::MatrixXf& P, Eigen::MatrixXf& R,
                        const std::vector<std::vector<int>>& O)
