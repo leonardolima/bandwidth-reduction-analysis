@@ -1,6 +1,6 @@
-# Peak Memory Optimization
+# Peak Memory Minimization
 
-This project is an implementation of an adapted version of the [bandwidth minimization problem](docs/references/cuthill1969.pdf), namely the peak memory optimization problem. You can find a more detailed explanation [here](docs/slides/presentation-10-07-2019.pdf).
+This project is an implementation of an adapted version of the [bandwidth minimization problem](docs/references/cuthill1969.pdf), namely the peak memory minimization problem. You can find a more detailed explanation [here](docs/slides/presentation-10-07-2019.pdf).
 
 ## Getting Started
 
