@@ -1,24 +1,19 @@
-/******************************
- *                            *
- *    Leonardo Lima, 2019     *
- *                            *
-/******************************/
-
 #include <iostream>
 #include <cmath>
 #include <Eigen/Dense>
 #include "../basic.h"
 
-/* Function: ludcmp
+/*******************************************************************************
+ * Numerical Recipes' implementation of a method for performing LU
+ * decomposition.
  *
- * Inputs: a - matrix
- *         indx - output vector that records the row permutation effected
- *                by the partial pivoting
- *         d - output as +/-1 depending on whether the number of row interchanges
- *             was even or odd
  *
- * Numerical Recipes' implementation of a method for performing LU decomposition
- */
+ * @param a    Matrix.
+ * @param indx Output vector that records the row permutation effected
+ *             by the partial pivoting
+ * @param d    Output is +/-1 depending on whether the number of row
+ *             interchanges was even or odd.
+ ******************************************************************************/
 void ludcmp(Eigen::MatrixXf& a, Eigen::VectorXf& indx, double& d)
 {
     const double TINY = 1.0e-20;
@@ -72,13 +67,14 @@ void ludcmp(Eigen::MatrixXf& a, Eigen::VectorXf& indx, double& d)
     }
 }
 
-/* Function: lubksb
+/*******************************************************************************
+ * Numerical Recipes' implementation for solving a linear system of equations
+ * of the form A*X = B.
  *
- * Inputs: a - matrix (after applying LU decomposition)
- *         indx - input vector that comes from LU decomposition
  *
- * Numerical Recipes' implementation for solving the linear system of eq. A*X = B
- */
+ * @param a    Matrix after LU decomposition is applied.
+ * @param indx Input vector that comes from LU decomposition.
+ ******************************************************************************/
 void lubksb(const Eigen::MatrixXf& a, const Eigen::VectorXf& indx, Eigen::VectorXf& b)
 {
     int i, ii = 0, ip, j;
@@ -104,14 +100,15 @@ void lubksb(const Eigen::MatrixXf& a, const Eigen::VectorXf& indx, Eigen::Vector
     }
 }
 
-/* Function: band_decomposer
+/*******************************************************************************
+ * Numerical Recipes' implementation of a band decomposer.
  *
- * Inputs: A - band-diagonal (original) matrix
- *         Au - upper triangular matrix
- *         Al - lower triangular matrix
- *         indx - input vector (LU decomposition related)
  *
- */
+ * @param A Band-diagonal matrix.
+ * @param Au Upper triangular matrix.
+ * @param Al Lower triangular matrix.
+ * @param indx Input vector related to LU decomposition.
+ ******************************************************************************/
 void band_decomposer (const Eigen::MatrixXf& A, Eigen::MatrixXf& Au, Eigen::MatrixXf& Al,
                       Eigen::VectorXf& indx)
 {
@@ -165,15 +162,15 @@ void band_decomposer (const Eigen::MatrixXf& A, Eigen::MatrixXf& Au, Eigen::Matr
     }
 }
 
-/* Function: band_solver
+/*******************************************************************************
+ * LU decomposition method to solve a system of linear equations of the form
+ * A*x = b, considering that A is band-diagonal.
  *
- * Inputs: A - matrix (after applying LU decomposition)
- *         x - vector
- *         b - vector
  *
- * LU decomposition method to solve the system of linear equations Ax = b,
- * taking into account that A is band-diagonal
- */
+ * @param A Band-diagonal matrix.
+ * @param x Vector.
+ * @param b Vector.
+ ******************************************************************************/
 void band_solver (const Eigen::MatrixXf& A, Eigen::VectorXf& x, Eigen::VectorXf& b)
 {
     int m1 = matrix_bandwidth(A), n = A.rows();

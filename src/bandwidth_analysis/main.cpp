@@ -1,10 +1,4 @@
-/******************************
- *                            *
- *    Leonardo Lima, 2019     *
- *                            *
-/******************************/
-
-#include "bandwidth_minimization.h"
+#include "cuthill_mckee.h"
 #include "crank_nicolson.h"
 #include "compare_solvers.h"
 

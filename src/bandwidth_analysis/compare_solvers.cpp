@@ -1,9 +1,3 @@
-/******************************
- *                            *
- *    Leonardo Lima, 2019     *
- *                            *
-/******************************/
-
 #include <Eigen/Dense>
 #include <iostream>
 #include <chrono>
@@ -11,11 +5,14 @@
 #include "tridiagonal.h"
 #include "../io.h"
 
-/* Function: compare_lubksb_tridag
+/*******************************************************************************
+ * Analysis of time complexity comparison between the LU Decomposition method
+ * for solving linear systems and the solver specific to tridiagonal matrices.
  *
- * Inputs: N - maximum matrix dimension
  *
- */
+ * @param P Permutation matrix.
+ * @param label Node's label.
+ ******************************************************************************/
 void compare_lubksb_tridag(int N)
 {
     Eigen::MatrixXf R = Eigen::MatrixXf::Zero(N/10, 3);

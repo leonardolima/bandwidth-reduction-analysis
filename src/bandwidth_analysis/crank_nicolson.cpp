@@ -1,9 +1,3 @@
-/******************************
- *                            *
- *    Leonardo Lima, 2019     *
- *                            *
-/******************************/
-
 #include <iostream>
 #include <vector>
 #include <cmath>
@@ -11,26 +5,27 @@
 #include <chrono>
 #include <map>
 #include <Eigen/Dense>
-#include "bandwidth_minimization.h"
+#include "cuthill_mckee.h"
 #include "gauss_jordan.h"
 #include "lu_decomposition.h"
 #include "../io.h"
 
-/* Function: diffusion_1d
+/*******************************************************************************
+ * Finite Difference Method for numerically solving the Heat Equation in 1
+ * dimension.
  *
- * Inputs: N - number of grid points (assuming a square n x n grid)
- *         L - size of the grid
- *         dt - time step
- *         nsteps - number of time steps
- *         R - matrix[N-2, nsteps] in order to save U at each step
  *
- * Finite Difference Method for numerically solving the
- * Heat Equation in 1 dimension
- */
+ * @param N Number of grid points.
+ * @param L Size of the grid.
+ * @param dt Time step unit.
+ * @param nsteps Number of steps.
+ * @param R - Matrix used to store solution at each one of the steps.
+ ******************************************************************************/
 void diffusion_1d (int N, float L, float dt, int nsteps, Eigen::MatrixXf& R)
 {
+    // Assuming a square N x N grid
     // Numerical parameters, assuming heat coefficient = 1
-    float dx = L/(N-1); // Grid spacing
+    float dx = L/(N-1);      // Grid spacing
     float z = dt/pow(dx, 2); // Auxiliary variable
 
     // Initializing matrices and vectors
@@ -38,6 +33,7 @@ void diffusion_1d (int N, float L, float dt, int nsteps, Eigen::MatrixXf& R)
     Eigen::MatrixXf I = Eigen::MatrixXf::Identity(N-2, N-2);
     Eigen::VectorXf U = Eigen::VectorXf::Zero(N-2);
     Eigen::VectorXf b = Eigen::VectorXf::Zero(N-2);
+
     // Auxiliary matrices
     Eigen::MatrixXf A = Eigen::MatrixXf::Zero(N-2, N-2);
     Eigen::MatrixXf B = Eigen::MatrixXf::Zero(N-2, N-2);
@@ -86,15 +82,16 @@ void diffusion_1d (int N, float L, float dt, int nsteps, Eigen::MatrixXf& R)
         R.col(m) = U;
     }
 }
-/* Function: diffusion_1d_results_to_csv
+
+/*******************************************************************************
+ * Save solutions (1 dimension case) for each time step as a CSV file.
  *
- * Inputs: N - number of grid points (assuming a square n x n grid)
- *         L - size of the grid
- *         dt - time step
- *         nsteps - number of time steps
  *
- * Saves the solutions for each time step as a csv file
- */
+ * @param N Number of grid points.
+ * @param L Size of the grid.
+ * @param dt Time step unit.
+ * @param nsteps Number of time steps.
+ ******************************************************************************/
 void diffusion_1d_results_to_csv (int N, float L, float dt, int nsteps)
 {
     Eigen::MatrixXf R = Eigen::MatrixXf::Zero(N-2, nsteps);
@@ -102,20 +99,18 @@ void diffusion_1d_results_to_csv (int N, float L, float dt, int nsteps)
     matrix_to_csv(R);
 }
 
-/* Function: diffusion_2d
+/*******************************************************************************
+ * Finite Difference Method for numerically solving the Heat Equation in 2
+ * dimensions.
  *
- * Inputs: N - number of grid points (assuming a square n x n grid)
- *         L - size of the grid
- *         dt - time step
- *         nsteps - number of time steps
- *         R - matrix[N-2, nsteps] in order to save U at each step
- *         apply_cuthill_mckee - applies the Cuthill-McKee algorithm to H
- *                               in order to improve performance
  *
- * Finite Difference Method for numerically solving the
- * Heat Equation in 2 dimensions
- */
-void diffusion_2d (int N, float L, float dt, int nsteps, Eigen::MatrixXf& R, bool apply_cuthill_mckee)
+ * @param N Number of grid points.
+ * @param L Size of the grid.
+ * @param dt Time step unit.
+ * @param nsteps Number of steps.
+ * @param R Matrix used to store solution at each one of the steps.
+ ******************************************************************************/
+void diffusion_2d (int N, float L, float dt, int nsteps, Eigen::MatrixXf& R)
 {
     // Numerical parameters, assuming heat coefficient = 1
     int n = (int)sqrt(N-1);
@@ -181,21 +176,6 @@ void diffusion_2d (int N, float L, float dt, int nsteps, Eigen::MatrixXf& R, boo
     // std::cout << "M = " << std::endl;
     // std::cout << M << std::endl;
 
-    // Applying the Cuthill-McKee algorithm to H
-    if (apply_cuthill_mckee)
-    {
-        Eigen::MatrixXf P = Eigen::MatrixXf::Zero(N-2, N-2);
-        Eigen::MatrixXf R = Eigen::MatrixXf::Zero(N-2, N-2);
-        run_algorithm(H, P, R);
-
-        // std::cout << "H = " << std::endl;
-        // std::cout << H << std::endl;
-        // std::cout << "R = " << std::endl;
-        // std::cout << R << std::endl;
-        H = R;
-        M = (P*M*P.transpose());
-    }
-
     for (int m = 0; m < nsteps; ++m)
     {
         // std::cout << "U[m] = " << std::endl;
@@ -234,68 +214,31 @@ void diffusion_2d (int N, float L, float dt, int nsteps, Eigen::MatrixXf& R, boo
     }
 }
 
-/* Function: diffusion_2d_results_to_csv
+/*******************************************************************************
+ * Save solutions (2 dimensions case) for each time step as a CSV file.
  *
- * Inputs: N - number of grid points (assuming a square n x n grid)
- *         L - size of the grid
- *         dt - time step
- *         nsteps - number of time steps
  *
- * Saves the solutions for each time step as a csv file
- */
+ * @param N Number of grid points.
+ * @param L Size of the grid.
+ * @param dt Time step unit.
+ * @param nsteps Number of time steps.
+ ******************************************************************************/
 void diffusion_2d_results_to_csv (int N, float L, float dt, int nsteps)
 {
     Eigen::MatrixXf R = Eigen::MatrixXf::Zero(N-2, nsteps);
-    diffusion_2d(N, L, dt, nsteps, R, false);
+    diffusion_2d(N, L, dt, nsteps, R);
     matrix_to_csv(R);
 }
 
-/* Function: diffusion_2d_compare
+/*******************************************************************************
+ * Finite Difference Method for numerically solving the Heat Equation in 2
+ * dimensions.
  *
- * Inputs: N - number of grid points (assuming a square n x n grid)
- *         L - size of the grid
- *         dt - time step
- *         nsteps - number of time steps
  *
- * Compares the time performance of the Crank-Nicolson approach for
- * solving the 2D diffusion problem before and after applying the
- * Cuthill-McKee algorithm to matrix H. We reduce its bandwidth in
- * order to improve the performance when solving the linear system
- * at each time step. A squared grid is assumed
- */
-void diffusion_2d_compare (int N, float L, float dt, int nsteps)
-{
-    Eigen::MatrixXf R = Eigen::MatrixXf::Zero(N-2, nsteps);
-
-    auto start = std::chrono::high_resolution_clock::now();
-
-    diffusion_2d(N, L, dt, nsteps, R, false);
-
-    auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration<float>(stop - start);
-    auto duration_s = std::chrono::duration_cast<std::chrono::seconds>(duration);
-    std::cout << "Execution duration = " << duration_s.count() << "s" << std::endl;
-    std::cout << std::endl;
-
-    start = std::chrono::high_resolution_clock::now();
-
-    diffusion_2d(N, L, dt, nsteps, R, true);
-
-    stop = std::chrono::high_resolution_clock::now();
-    duration = std::chrono::duration<float>(stop - start);
-    duration_s = std::chrono::duration_cast<std::chrono::seconds>(duration);
-    std::cout << "Applying the Cuthill-McKee algorithm: " << std::endl;
-    std::cout << "Execution duration = " << duration_s.count() << "s" << std::endl;
-    std::cout << std::endl;
-}
-
-/* Function: map_to_U
- * Inputs:
- *         X - number of grid points in the X direction
- *         Y - number of grid points in the Y direction
- *
- * Computes a map (i,j) -> position of grid point on vector U
- */
+ * @param X Number of grid points in the X direction.
+ * @param Y Number of grid points in the Y direction.
+ * @param m Mapping of grid points on the solutions vector.
+ ******************************************************************************/
 void map_to_U (int X, int Y, std::map<std::pair<int, int>, int>& m)
 {
     int index_U = 0;
@@ -355,28 +298,10 @@ void map_to_U (int X, int Y, std::map<std::pair<int, int>, int>& m)
     }
 }
 
-// Auxiliary function
-// TODO: Move it somewhere else later
-void print_map(const std::map<std::pair<int, int>, int>& m)
-{
-    for (const auto &it : m)
-    {
-        auto& k = it.first;
-        auto& v = it.second;
-        std::cout << "m[" << k.first << ", " << k.second  << "] = (" << v << ") " << std::endl;
-    }
-}
-
-/* Function: diffusion_2d_irregular
- *
- * Inputs: X - number of grid points in the X direction
- *         Y - number of grid points in the Y direction
- *         L - size of the grid
- *         dt - time step
- *         nsteps - number of time steps
- *         R - matrix[n, nsteps] in order to save U at each step
- *         apply_cuthill_mckee - applies the Cuthill-McKee algorithm to H
- *                               in order to improve performance
+/*******************************************************************************
+ * Finite Difference Method for numerically solving the Heat Equation in 2
+ * dimensions on an irregular shape object. Satisfying the constraint Y = X + 3,
+ * where X = {9, 11, 13, ...}.
  *
  *  C inversed shape:
  *   _____________
@@ -390,12 +315,18 @@ void print_map(const std::map<std::pair<int, int>, int>& m)
  *   |           |
  *   |___________|
  *
- *   Constraint: Y = X + 3, where X = {9, 11, 13, ...}
  *
- * Finite Difference Method for numerically solving the
- * Heat Equation in 2 dimensions
- */
-void diffusion_2d_irregular (int X, int Y, float L, float dt, int nsteps, Eigen::MatrixXf& R, bool apply_cuthill_mckee)
+ * @param X Number of grid points in the X direction.
+ * @param Y Number of grid points in the Y direction.
+ * @param L Size of the grid.
+ * @param dt Time step unit.
+ * @param nsteps Number of steps.
+ * @param R Matrix used to store solution at each one of the steps.
+ * @param apply_cuthill_mckee If true applies the Cuthill-McKee algorithm to
+ *                            matrices in order to improve performance.
+ ******************************************************************************/
+void diffusion_2d_irregular (int X, int Y, float L, float dt, int nsteps,
+                             Eigen::MatrixXf& R, bool apply_cuthill_mckee)
 {
     // Numerical parameters, assuming heat coefficient = 1
     int N = ((2*X*Y)/3)+((X/2)*(Y/3));           // Total number of grid points considered
@@ -408,26 +339,9 @@ void diffusion_2d_irregular (int X, int Y, float L, float dt, int nsteps, Eigen:
     Eigen::MatrixXf H = Eigen::MatrixXf::Zero(N, N);
     Eigen::VectorXf U = Eigen::VectorXf::Zero(N);
     Eigen::VectorXf b = Eigen::VectorXf::Zero(N);
+
     // Auxiliary matrix
     Eigen::MatrixXf M = Eigen::MatrixXf::Zero(N, N);
-
-    // for (int i = 0; i < N-2; ++i)
-    // {
-    //     // Boundary conditions, assuming homogeneous dirichlet conditions
-    //     // u(0, y, t) = u(n, y, t) = 0 and
-    //     // u(x, 0, t) = u(x, n, t) = 0
-    //     if ((i < n) || (i > N-2-n)) U[i] = 0;
-    //     else {
-    //         if ((i % n) == 0)
-    //         {
-    //             U[i-1] = 0;
-    //             U[i] = 0;
-    //         } else {
-    //             // Initial condition, assuming u(x, y, 0) = 2x + 2y
-    //             U[i] = dx + dt;
-    //         }
-    //     }
-    // }
 
     std::map<std::pair<int, int>, int> U_map;
     map_to_U(X, Y, U_map);
@@ -446,6 +360,7 @@ void diffusion_2d_irregular (int X, int Y, float L, float dt, int nsteps, Eigen:
         std::pair<int, int> p3;
         std::pair<int, int> p4;
 
+        // TODO: Rewrite the if's below
         if (p.first+1 < X)
         {
             p1 = std::make_pair(p.first+1, p.second);
@@ -458,7 +373,6 @@ void diffusion_2d_irregular (int X, int Y, float L, float dt, int nsteps, Eigen:
             }
         }
 
-        // TODO: Rewrite the if's below
         if (p.second+1 < Y)
         {
             p2 = std::make_pair(p.first, p.second+1);
@@ -495,7 +409,7 @@ void diffusion_2d_irregular (int X, int Y, float L, float dt, int nsteps, Eigen:
         }
     }
 
-    // // Applying the Cuthill-McKee algorithm to H
+    // Applying the Cuthill-McKee algorithm to H
     if (apply_cuthill_mckee)
     {
         Eigen::MatrixXf P = Eigen::MatrixXf::Zero(N, N);
@@ -523,38 +437,24 @@ void diffusion_2d_irregular (int X, int Y, float L, float dt, int nsteps, Eigen:
         if (apply_cuthill_mckee) band_solver(H, U, b);
         else U = H.partialPivLu().solve(b);
 
-        // Boundary conditions
-        // for (int i = 0; i < N-2; ++i)
-        // {
-        //     if ((i < n) || (i > N-2-n)) U[i] = 0;
-        //     else {
-        //         if ((i % n) == 0)
-        //         {
-        //             U[i-1] = 0;
-        //             U[i] = 0;
-        //         }
-        //     }
-        // }
-
         R.col(m) = U;
     }
 }
 
-/* Function: diffusion_2d_irregular_compare
+/*******************************************************************************
+ * Compares time performance of the Crank-Nicolson approach for solving the 2D
+ * diffusion problem before and after applying the Cuthill-McKee algorithm to
+ * the matrices. Reducing their bandwidth improves the performance of each time
+ * step when solving the linear system. An irregular shape object is assumed, in
+ * particular a C inverted shape.
  *
- * Inputs: X - number of grid points in the X direction
- *         Y - number of grid points in the Y direction
- *         N - number of grid points (assuming a square n x n grid)
- *         L - size of the grid
- *         dt - time step
- *         nsteps - number of time steps
  *
- * Compares the time performance of the Crank-Nicolson approach for
- * solving the 2D diffusion problem before and after applying the
- * Cuthill-McKee algorithm to matrix H. We reduce its bandwidth in
- * order to improve the performance when solving the linear system
- * at each time step. An irregular grid is assumed (C inverted shape)
- */
+ * @param X Number of grid points in the X direction.
+ * @param Y Number of grid points in the Y direction.
+ * @param L Size of the grid.
+ * @param dt Time step unit.
+ * @param nsteps Number of steps.
+ ******************************************************************************/
 void diffusion_2d_irregular_compare (int X, int Y, float L, float dt, int nsteps)
 {
     int N = ((2*X*Y)/3)+((X/2)*(Y/3));

@@ -1,20 +1,14 @@
-/******************************
- *                            *
- *    Leonardo Lima, 2019     *
- *                            *
-/******************************/
-
 #include <cmath>
 #include <iostream>
 #include <vector>
-#include "gauss_jordan.h"
+#include <Eigen/Dense>
 
-/* Function: check_if_inversible
+/*******************************************************************************
+ * Checks if M*M^T is a diagonal matrix of 1's, i.e., if matrix is inversible.
  *
- * Inputs: M - original matrix
  *
- * Check if M*M^T is a diagonal matrix of 1's
- */
+ * @param M Matrix.
+ ******************************************************************************/
 bool check_if_inversible (const Eigen::MatrixXf& M)
 {
     Eigen::MatrixXf R = M*M.transpose();
@@ -31,13 +25,13 @@ bool check_if_inversible (const Eigen::MatrixXf& M)
     return true;
 }
 
-/* Function: gauss_jordan
- *
- * Inputs: M - original matrix
- *
- * Implementation of Gauss-Jordan's method.
+/*******************************************************************************
+ * Implementation of Gauss-Jordan's method from Numerical Recipes' book.
  * The inverse of M is gradually built up in M itself.
- */
+ *
+ *
+ * @param M Matrix.
+ ******************************************************************************/
 void compute_inverse (Eigen::MatrixXf& M)
 {
     int icol = 0, irow = 0;
@@ -110,6 +104,15 @@ void compute_inverse (Eigen::MatrixXf& M)
     }
 }
 
+/*******************************************************************************
+ * Implementation of Gauss-Jordan's elimination method from Numerical Recipes'
+ * book.
+ *
+ *
+ * @param H Matrix.
+ * @param U Vector.
+ * @param b Vector.
+ ******************************************************************************/
 void gaussj_elim (const Eigen::MatrixXf& H, const Eigen::VectorXf& U, Eigen::VectorXf& b)
 {
     Eigen::MatrixXf M = H;
