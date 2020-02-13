@@ -1,9 +1,9 @@
 CXX = g++
 CXXFLAGS = -I /usr/local/include/eigen3 -std=c++17 -Wall -pedantic-errors -g
 
-SRCS = main.cpp peak_mem.cpp cuthill_mckee.cpp basic.cpp
+SRCS = main.cpp peak_mem.cpp adapted_cuthill_mckee.cpp basic.cpp bandwidth_analysis/cuthill_mckee.cpp
 OBJS = ${SRCS:.cpp=.o}
-HEADERS = peak_mem.h cuthill_mckee.h basic.h
+HEADERS = peak_mem.h adapted_cuthill_mckee.h basic.h bandwidth_analysis/cuthill_mckee.h
 
 MAIN = main
 

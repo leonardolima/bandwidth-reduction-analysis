@@ -24,6 +24,13 @@ bool node_has_label (const Eigen::MatrixXf& P, unsigned int col)
     return false;
 }
 
+int node_label (const Eigen::MatrixXf& P, unsigned int col)
+{
+    for (int i = 0; i < P.rows(); ++i) if (P(i, col) != 0) return P(i, col);
+
+    return -1;
+}
+
 /*******************************************************************************
  * Returns node's index on the adjacency matrix (the one representing the graph)
  * given its label.

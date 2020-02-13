@@ -1,20 +1,12 @@
-/******************************
- *                            *
- *    Leonardo Lima, 2019     *
- *                            *
-/******************************/
-
 #include <Eigen/Dense>
 #include <algorithm>
 
-/* Function: matrix_bandwidth
+/*******************************************************************************
+ * Calculates bandwidth of a particular matrix.
  *
- * Inputs:
- *         R - matrix
  *
- * Outputs:
- *         max_bandwidth - matrix bandwidth
- */
+ * @param R Matrix.
+ ******************************************************************************/
 int matrix_bandwidth (const Eigen::MatrixXf& R)
 {
     std::vector<int> rows_bandwidth(R.rows(), 0);

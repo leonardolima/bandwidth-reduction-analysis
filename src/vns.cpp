@@ -1,15 +1,11 @@
-/******************************
- *                            *
- *    Leonardo Lima, 2020     *
- *                            *
-/******************************/
-
 #include <iostream>
 #include <random>
 #include <vector>
 #include <limits>
 #include <Eigen/Dense>
 #include "basic.h"
+
+// TODO: Change comments to Doxygen format
 
 /* Function: max_adj_label
  *

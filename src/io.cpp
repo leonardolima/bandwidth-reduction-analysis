@@ -1,18 +1,18 @@
-/******************************
- *                            *
- *    Leonardo Lima, 2019     *
- *                            *
-/******************************/
-
 #include <fstream>
+#include <iostream>
+#include <map>
 #include <Eigen/Dense>
 
-/* Function: matrix_to_csv
- *
- * Inputs: R - matrix
- *
- * The matrix is saved as a CSV file
- */
+void print_map(const std::map<std::pair<int, int>, int>& m)
+{
+    for (const auto &it : m)
+    {
+        auto& k = it.first;
+        auto& v = it.second;
+        std::cout << "m[" << k.first << ", " << k.second  << "] = (" << v << ") " << std::endl;
+    }
+}
+
 void matrix_to_csv(const Eigen::MatrixXf& R)
 {
     const Eigen::IOFormat CSVFormat(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", "\n");

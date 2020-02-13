@@ -1,25 +1,16 @@
-/******************************
- *                            *
- *    Leonardo Lima, 2019     *
- *                            *
-/******************************/
-
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <Eigen/Dense>
-#include "cuthill_mckee.h"
+#include "adapted_cuthill_mckee.h"
 
-/* Function: string_split
+/*******************************************************************************
+ * Lists each integer of a particular string.
  *
- * Inputs:
- *         s   - string
- *         del - delimiter (in our particular case it is a single space)
  *
- * List each integer on the string s
- *
- */
-
+ * @param s String.
+ * @param del Delimiter between integers.
+ ******************************************************************************/
 std::vector<int> string_split (const std::string& s, const char del)
 {
     std::vector<int> tokens;
@@ -48,21 +39,22 @@ int read_N_from_file (const std::string& file_name)
     return N;
 }
 
-/* Function: read_file
+/*******************************************************************************
+ * From the input file, generates a matrix A representing the graph and a vector
+ * O in order to check the ordering when applying the chosen algorithm.
  *
- * Inputs:
- *
- * Reads a .txt file in the following format:
+ * Input file has the following format:
  * First line corresponds to the number of nodes (N)
  * From the second line onwards:
- * n1 - o1 (i.e., node 1 has output size o1)
- * n2 - o2 n1 (i.e., node 2 has output size o2 and receives n1 as input)
+ * n1 o1 (i.e., node 1 has output size o1)
+ * n2 o2 n1 (i.e., node 2 has output size o2 and receives n1 as input)
  *
- * From there, generates a matrix A representing the graph and a vector O
- * in order to check the ordering when applying the algorithm
- *
- */
-void read_file (const std::string& file_name, Eigen::MatrixXf& A, std::vector<std::vector<int>>& O)
+ * @param file_name String containing file's name.
+ * @param A Adjacency matrix of the graph (symmetric).
+ * @param O Ordering constraints (given in the form L_x > [L_yi]).
+ ******************************************************************************/
+void read_file (const std::string& file_name, Eigen::MatrixXf& A,
+                std::vector<std::vector<int>>& O)
 {
     // File initialization
     std::ifstream file(file_name);
@@ -95,7 +87,18 @@ void read_file (const std::string& file_name, Eigen::MatrixXf& A, std::vector<st
     file.close();
 }
 
-void convert_vector(const std::vector<std::vector<int>>& O, std::vector<std::vector<int>>& new_O)
+/*******************************************************************************
+ * Changes constraints format.
+ *
+ * Constraints are given in the form L_x > [L_yi], but in order to keep search
+ * O(1) the format is changed to L_x < [L_yi].
+ *
+ *
+ * @param O     Ordering constraints (in the form L_x > [L_yi]).
+ * @param new_O Ordering constraints (in the form L_x < [L_yi]).
+ ******************************************************************************/
+void convert_vector(const std::vector<std::vector<int>>& O,
+                    std::vector<std::vector<int>>& new_O)
 {
     for (std::vector<std::vector<int>>::size_type i = 0; i < O.size(); ++i)
     {
@@ -129,5 +132,5 @@ void peak_mem(const std::string& file_name)
 
     convert_vector(O, new_O);
 
-    compute_matrices(A, P, R, new_O);
+    apply_adapted_cuthill_mckee(A, P, R, new_O);
 }
