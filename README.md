@@ -1,6 +1,6 @@
 # Peak Memory Minimization
 
-This project is an implementation of an adapted version of the [bandwidth minimization problem](docs/references/cuthill1969.pdf), namely the peak memory minimization problem. You can find a more detailed explanation [here](docs/slides/presentation-10-07-2019.pdf).
+This project aims to adapt, implement and analyze a variety of solving methods for the [bandwidth minimization problem](docs/references/cuthill1969.pdf) in order to minimize peak memory consumption of programs. You can find a more detailed explanation [here](docs/slides/presentation-10-07-2019.pdf).
 
 ## Getting Started
 
@@ -12,27 +12,27 @@ These are the basic steps to take if you need to run the project on your local m
 
 ### Running
 
-At this point, only the bandwidth minimization solution found [here](docs/references/cuthill1969.pdf) is already implemented. In the [bandwidth_minimization.cpp](src/bandwidth_minimization.cpp) file, you can find a function named *execute_algorithm()*, from which it is possible to change the matrix that you are currently working on.
+Currently, just the motivation of the work is fully working, more specifically the impact of bandwidth reduction when numerically solving the heat equation using the Crank-Nicolson method. In the [main.cpp](src/bandwidth_analysis/main.cpp) file, you can change the parameters accordingly.
 
-In the [src](src/) directory there is a **Makefile**. You can run 
+Inside the [src/bandwidth_analysis](src/bandwidth_analysis) and [src/](src/) directories there are **Makefiles**. You can run 
 
 ```
-make
+$ make
 ```
 
 And
 
 ```
-./main
+$ ./main
 ```
 
 You may need to change the permissions of **main** in order to execute it. When finished, just type
 
 ```
-make clean
+$ make clean
 ```
 
 ## License
 
-This project is licensed under the GPL-3.0 license - see [LICENSE.md](LICENSE.md) for details.
+This project is licensed under the GPL-3.0 license - see [LICENSE](LICENSE) for details.
 
