@@ -205,10 +205,10 @@ void initial_solution (const std::vector<std::vector<int>>& adj_list, std::vecto
 
         for (int i1 = 0; i1 < ql; ++i1)
         {
-            i = q[i1];
+            int i = q[i1];
             for (int j1 = 0; j1 < adj_list[i].size(); ++j1)
             {
-                j = adj_list[i][j1];
+                int j = adj_list[i][j1];
 
                 if (!mark[j])
                 {
@@ -218,11 +218,11 @@ void initial_solution (const std::vector<std::vector<int>>& adj_list, std::vecto
             }
         }
 
-        j_star = uni_dist_ql(rng);
+        int j_star = uni_dist_ql(rng);
 
         for (int j1 = 0; j1 < ql; ++j1)
         {
-            j = q[j_star];
+            int j = q[j_star];
             l++;
             label[j] = l;
             j_star++;

@@ -1,1 +1,7 @@
 *.o
+.vs
+packages
+x64
+*.vcxproj.filters
+*.VC.db
+*.VC.opendb

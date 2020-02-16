@@ -1,5 +1,6 @@
 #include <Eigen/Dense>
 #include <algorithm>
+#include <vector>
 
 /*******************************************************************************
  * Calculates bandwidth of a particular matrix.
