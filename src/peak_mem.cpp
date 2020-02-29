@@ -77,7 +77,7 @@ void read_file (const std::string& file_name, Eigen::MatrixXf& A,
         for (std::vector<int>::size_type j = 1; j < tokens.size(); ++j)
         {
             O[i].push_back(tokens[j]);
-            A(tokens[j], i) = A(tokens[j], tokens[j]);
+            A(tokens[j], i) = A(tokens[j], tokens[j]); // potentially using A(j, j) before initialisation ?
             A(i, tokens[j]) = A(tokens[j], tokens[j]);
         }
 
