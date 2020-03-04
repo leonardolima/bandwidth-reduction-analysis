@@ -16,7 +16,10 @@ int matrix_bandwidth (const Eigen::MatrixXf& R)
     {
         for(int j = 0; j < R.cols(); ++j)
         {
-            if (R(i,j) != 0 && i != j && (j-i) > rows_bandwidth[i]) rows_bandwidth[i] = j-i;
+            if (R(i,j) != 0 && i != j && (fabs(j-i) > rows_bandwidth[i]))
+            {
+                rows_bandwidth[i] = fabs(j-i);
+            }
         }
     }
 
