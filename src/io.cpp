@@ -4,6 +4,7 @@
 #include <queue>
 #include <set>
 #include <Eigen/Dense>
+#include "basic.h"
 
 void print_set (const std::set<int>& s)
 {
@@ -35,6 +36,13 @@ void print_map (const std::map<std::pair<int, int>, int>& m)
         auto& v = it.second;
         std::cout << "m[" << k.first << ", " << k.second  << "] = (" << v << ") " << std::endl;
     }
+}
+
+void print_bandwidth_comparison (const Eigen::MatrixXf& A, const Eigen::MatrixXf& R)
+{
+    std::cout << "dim(A) = " << A.rows() << "x" << A.cols() << std::endl;
+    std::cout << "bandwidth(A) = " << matrix_bandwidth(A) << std::endl;
+    std::cout << "bandwidth(R) = " << matrix_bandwidth(R) << std::endl;
 }
 
 void matrix_to_csv (const Eigen::MatrixXf& R)

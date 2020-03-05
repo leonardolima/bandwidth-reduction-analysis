@@ -2,9 +2,9 @@
 #include <fstream>
 #include <vector>
 #include <Eigen/Dense>
-#include "basic.h"
 #include "adapted_cuthill_mckee.h"
 #include "depth.h"
+#include "io.h"
 
 /*******************************************************************************
  * Lists each integer of a particular string.
@@ -56,8 +56,10 @@ int read_N_from_file (const std::string& file_name)
  * @param O Ordering constraints (given in the form L_x > [L_yi]).
  ******************************************************************************/
 void read_file (const std::string& file_name, Eigen::MatrixXf& A,
-                std::vector<std::vector<int>>& O)
+                std::vector<std::vector<int>>& O, int N)
 {
+    std::vector<std::vector<int>> tokens(N);
+
     // File initialization
     std::ifstream file(file_name);
 
@@ -72,17 +74,25 @@ void read_file (const std::string& file_name, Eigen::MatrixXf& A,
 
     while (std::getline(file, line))
     {
-        std::vector<int> tokens = string_split(line, ' ');
+        tokens[i] = string_split(line, ' ');
 
-        A(i, i) = float(tokens[0]);
+        A(i, i) = float(tokens[i][0]);
 
-        for (std::vector<int>::size_type j = 1; j < tokens.size(); ++j)
+        for (std::vector<int>::size_type j = 1; j < tokens[i].size(); ++j)
         {
-            O[i].push_back(tokens[j]);
-            A(i, tokens[j]) = A(tokens[j], tokens[j]); // potentially using A(j, j) before initialisation ?
+            O[i].push_back(tokens[i][j]);
         }
 
         i++;
+    }
+
+    // Update matrix A only after all data is read
+    for (std::vector<std::vector<int>>::size_type i = 0; i < tokens.size(); ++i)
+    {
+        for (std::vector<int>::size_type j = 1; j < tokens[i].size(); ++j)
+        {
+            A(i, tokens[i][j]) = A(tokens[i][j], tokens[i][j]);
+        }
     }
 
     file.close();
@@ -121,16 +131,25 @@ void convert_vector (const std::vector<std::vector<int>>& O,
     }
 }
 
+void test_adapted_cuthill_mckee (const Eigen::MatrixXf& A, Eigen::MatrixXf& P,
+                                 Eigen::MatrixXf& R, const std::vector<std::vector<int>>& O)
+{
+    apply_adapted_cuthill_mckee (A, P, R, O);
+
+    R = (P*A*P.transpose());
+
+    std::cout << "Applying adapted Cuthill-McKee algorithm: " << std::endl;
+    print_bandwidth_comparison(A, R);
+}
+
 void test_depth (const Eigen::MatrixXf& A, Eigen::MatrixXf& P, Eigen::MatrixXf& R)
 {
     apply_depth(A, P);
 
-    R = (P*A*P.transpose()); // Resulting matrix
+    R = (P*A*P.transpose());
 
     std::cout << "Applying depth approach: " << std::endl;
-    std::cout << "dim(A) = " << A.rows() << "x" << A.cols() << std::endl;
-    std::cout << "bandwidth(A) = " << matrix_bandwidth(A) << std::endl;
-    std::cout << "bandwidth(R) = " << matrix_bandwidth(R) << std::endl;
+    print_bandwidth_comparison(A, R);
 }
 
 void peak_mem (const std::string& file_name)
@@ -152,12 +171,14 @@ void peak_mem (const std::string& file_name)
     // Vector corresponding to the ordering L_x < [L_yi]
     std::vector<std::vector<int>> new_O(N);
 
-    read_file(file_name, A, O);
+    read_file(file_name, A, O, N);
 
     convert_vector(O, new_O);
 
-    // Remember to call apply_symmetry() first
-    // apply_adapted_cuthill_mckee(A, P, R, new_O);
+    // 1. Adapted Cuthill-McKee approach
+    apply_symmetry(A);
+    test_adapted_cuthill_mckee(A, P, R, new_O);
 
+    // 2. Depth approach
     test_depth(A, P, R);
 }
