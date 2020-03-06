@@ -5,6 +5,7 @@
 #include "adapted_cuthill_mckee.h"
 #include "depth.h"
 #include "io.h"
+#include "basic.h"
 
 /*******************************************************************************
  * Lists each integer of a particular string.
@@ -96,17 +97,6 @@ void read_file (const std::string& file_name, Eigen::MatrixXf& A,
     }
 
     file.close();
-}
-
-void apply_symmetry (Eigen::MatrixXf& A)
-{
-    for (int i = 0; i < A.rows(); ++i)
-    {
-        for (int j = 0; j < A.cols(); ++j)
-        {
-            if (A(i,j) != 0) A(j, i) = A(i, j);
-        }
-    }
 }
 
 /*******************************************************************************

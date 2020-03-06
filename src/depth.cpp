@@ -3,6 +3,7 @@
 #include <limits>
 #include <queue>
 #include <Eigen/Dense>
+#include "basic.h"
 
 void label_nodes(const Eigen::MatrixXf& A, Eigen::MatrixXf& P,
                  std::vector<std::pair<int, int>> sorted_depth)
@@ -57,42 +58,6 @@ void calculate_depth(const std::vector<std::vector<int>>& parents, std::vector<i
             }
 
             depth[i] = min;
-        }
-    }
-}
-
-void parents_from_matrix(const Eigen::MatrixXf& A, std::vector<std::vector<int>>& parents)
-{
-    int N = A.rows();
-
-    for (int i = 0; i < N; ++i)
-    {
-        for (int j = 0; j < N; ++j)
-        {
-            if (A(i, j) != 0 && i != j) parents[i].push_back(j);
-        }
-    }
-
-    // for (std::vector<std::vector<int>>::size_type i = 0; i < parents.size(); ++i)
-    // {
-    //     std::cout << i << " -> ";
-    //     for (std::vector<int>::size_type j = 0; j < parents[i].size(); ++j)
-    //     {
-    //         std::cout << parents[i][j] << " ";
-    //     }
-    //     std::cout << std::endl;
-    // }
-}
-
-void children_from_matrix(const Eigen::MatrixXf& A, std::vector<std::vector<int>>& children)
-{
-    int N = A.rows();
-
-    for (int i = 0; i < N; ++i)
-    {
-        for (int j = 0; j < N; ++j)
-        {
-            if (A(i, j) != 0 && i != j) children[j].push_back(i);
         }
     }
 }
