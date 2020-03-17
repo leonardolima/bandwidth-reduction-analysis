@@ -121,10 +121,15 @@ void convert_vector (const std::vector<std::vector<int>>& O,
     }
 }
 
-void test_adapted_cuthill_mckee (const Eigen::MatrixXf& A, Eigen::MatrixXf& P,
-                                 Eigen::MatrixXf& R, const std::vector<std::vector<int>>& O)
+void test_adapted_cuthill_mckee (const Eigen::MatrixXf& A, Eigen::MatrixXf& P, Eigen::MatrixXf& R,
+                                 const std::vector<std::vector<int>>& prec_O,
+                                 const std::vector<std::vector<int>>& succ_O)
 {
-    apply_adapted_cuthill_mckee (A, P, R, O);
+    Eigen::MatrixXf A_sym = A;
+
+    apply_symmetry(A_sym);
+
+    apply_adapted_cuthill_mckee (A, A_sym, P, R, prec_O, succ_O);
 
     R = (P*A*P.transpose());
 
@@ -156,18 +161,24 @@ void peak_mem (const std::string& file_name)
     Eigen::MatrixXf R = Eigen::MatrixXf::Zero(N, N);
 
     // Vector corresponding to the ordering L_x > [L_yi]
-    std::vector<std::vector<int>> O(N);
+    std::vector<std::vector<int>> prec_O(N);
 
     // Vector corresponding to the ordering L_x < [L_yi]
-    std::vector<std::vector<int>> new_O(N);
+    std::vector<std::vector<int>> succ_O(N);
 
-    read_file(file_name, A, O, N);
+    read_file(file_name, A, prec_O, N);
 
-    convert_vector(O, new_O);
+    convert_vector(prec_O, succ_O);
+
+    // for (std::vector<std::vector<int>>::size_type i = 0; i < succ_O.size(); ++i)
+    // {
+    //     std::cout << "succ_O[" << i << "] = ";
+    //     for (std::vector<int>::size_type j = 0; j < succ_O[i].size(); ++j) std::cout << succ_O[i][j] << " ";
+    //     std::cout << std::endl;
+    // }
 
     // 1. Adapted Cuthill-McKee approach
-    apply_symmetry(A);
-    test_adapted_cuthill_mckee(A, P, R, new_O);
+    test_adapted_cuthill_mckee(A, P, R, prec_O, succ_O);
 
     // 2. Depth approach
     test_depth(A, P, R);

@@ -8,6 +8,8 @@ void run_tests (int);
 
 void run_algorithm (const Eigen::MatrixXf&, Eigen::MatrixXf&, Eigen::MatrixXf&);
 
+bool node_has_label (const Eigen::MatrixXf&, unsigned int);
+
 int node_label (const Eigen::MatrixXf&, unsigned int);
 
 int node_index (const Eigen::MatrixXf&, int);
