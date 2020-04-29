@@ -2,6 +2,7 @@
 #include <iostream>
 #include <map>
 #include <queue>
+#include <deque>
 #include <set>
 #include <Eigen/Dense>
 #include "basic.h"
@@ -26,6 +27,14 @@ void print_queue (const std::queue<int>& q)
         q_copy.pop();
     }
     std::cout << std::endl;
+}
+
+void print_deque (const std::deque<int>& d)
+{
+    for (std::deque<int>::size_type i = 0; i < d.size(); ++i)
+    {
+        std::cout << "d[" << i << "] = " << d[i] << std::endl;
+    }
 }
 
 void print_map (const std::map<std::pair<int, int>, int>& m)
