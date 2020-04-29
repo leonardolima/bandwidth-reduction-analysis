@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vector>
-#include <queue>
+#include <deque>
 #include <utility>
 #include <limits>
 #include <chrono>
@@ -40,13 +40,23 @@ bool check_constraints (int node, int label, Eigen::MatrixXf& P,
     return satisfy_ordering && have_labelled_parents;
 }
 
-void apply_label_to_node (Eigen::MatrixXf& P, const std::vector<std::vector<int>>& prec_O,
+void apply_label_to_node (Eigen::MatrixXf& P,
+                          const std::vector<std::vector<int>>& prec_O,
                           const std::vector<std::vector<int>>& succ_O,
-                          std::queue<int>& q, int node, int& new_label)
+                          std::deque<int>& d, int node, int& new_label,
+                          std::vector<int>& visited_nodes,
+                          std::vector<bool>& node_in_d)
 {
-    if (check_constraints(node, new_label, P, prec_O, succ_O)) {
-        P(new_label++, node) = 1;
-        q.pop();
+    if (!node_has_label(P, node))
+    {
+        if (check_constraints(node, new_label, P, prec_O, succ_O))
+        {
+            P(new_label++, node) = 1;
+            visited_nodes[node] = 1;
+        } else {
+            d.push_back(node);
+            node_in_d[node] = true;
+        }
     }
 }
 
@@ -72,49 +82,37 @@ void adapted_nodal_numbering (const Eigen::MatrixXf& A, Eigen::MatrixXf& P,
                               const std::vector<int>& initial_nodes)
 {
     int N = A.cols();
-    // std::cout << "N = " << N << std::endl;
     int new_label = 0;
 
-    std::queue<int> q;
-    std::vector<bool> node_in_q(N, false); // Existence of node in q
+    std::deque<int> d;
+    std::vector<bool> node_in_d(N, false); // Existence of node in d
     std::vector<int> visited_nodes(N, 0);
 
-    for(std::vector<int>::size_type i = 0; i < initial_nodes.size(); ++i)
+    for (std::vector<int>::size_type i = 0; i < initial_nodes.size(); ++i)
     {
         // Mark initial_nodes[i] as visited
         visited_nodes[initial_nodes[i]] = 1;
 
-        // Push initial_nodes[i] to q
-        q.push(initial_nodes[i]);
-        node_in_q[initial_nodes[i]] = true;
+        // Push initial_nodes[i] to d
+        d.push_back(initial_nodes[i]);
+        node_in_d[initial_nodes[i]] = true;
 
-        while (!q.empty())
+        while (!d.empty())
         {
-            // std::cout << "--------------------------" << std::endl;
-            // print_queue(q);
-            // std::cout << std::endl;
+            int u = d.front();
+            d.pop_front();
+            node_in_d[u] = false;
 
-            int u = q.front();
-            q.pop();
-            node_in_q[u] = false;
+            apply_label_to_node(P, prec_O, succ_O, d, u, new_label, visited_nodes, node_in_d);
 
-            // std::cout << "select:" << u << std::endl;
-
-            if (!node_has_label(P, u))
+            for (std::deque<int>::size_type i = 0; i < d.size(); ++i)
             {
-                if (check_constraints(u, new_label, P, prec_O, succ_O))
-                {
-                    // std::cout << "new_label = " << new_label << "| cur_node = " << u << std::endl;
-                    P(new_label++, u) = 1;
-                    visited_nodes[u] = 1;
-                } else {
-                    q.push(u);
-                    node_in_q[u] = true;
-                }
-            }
+                int n = d.front();
+                d.pop_front();
+                node_in_d[n] = false;
 
-            // print_queue(q);
-            // std::cout << std::endl;
+                apply_label_to_node(P, prec_O, succ_O, d, n, new_label, visited_nodes, node_in_d);
+            }
 
             if (rows_deg[u] > 0)
             {
@@ -126,19 +124,18 @@ void adapted_nodal_numbering (const Eigen::MatrixXf& A, Eigen::MatrixXf& P,
                     int cur_node = sorted_rows_deg[i].second;
                     if (visited_nodes[cur_node] == 0 && check_constraints(cur_node, new_label, P, prec_O, succ_O))
                     {
-                        // std::cout << "new_label = " << new_label << "| cur_node = " << cur_node << std::endl;
                         P(new_label++, cur_node) = 1;
                         visited_nodes[cur_node] = 1;
                     }
 
-                    if (node_in_q[cur_node] == false)
+                    if (node_in_d[cur_node] == false)
                     {
-                        q.push(cur_node);
-                        node_in_q[cur_node] = true;
+                        d.push_back(cur_node);
+                        node_in_d[cur_node] = true;
                     }
                 }
 
-                if (node_in_q[u] == false) visited_nodes[u] = 2;
+                if (node_in_d[u] == false) visited_nodes[u] = 2;
             }
         }
     }

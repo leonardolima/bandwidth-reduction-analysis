@@ -5,7 +5,7 @@
 
 int main (void)
 {
-    std::vector<std::string> exc_files = {"Pipe_to_Table_yxmc.txt"};
+    std::vector<std::string> exc_files = {"Pipe_to_Table_yxmc.txt", "Legend_Builder_yxmc.txt"};
 
     std::string folder = "data_sets/";
     for (const auto& file : std::filesystem::directory_iterator(folder))
@@ -20,5 +20,5 @@ int main (void)
         }
     }
 
-    // peak_mem("data_sets/Pipe_to_Table_yxmc.txt");
+    // peak_mem("data_sets/Base64_Encoder_yxmc.txt");
 }
