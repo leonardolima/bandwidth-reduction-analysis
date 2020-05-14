@@ -3,7 +3,7 @@
 #include <vector>
 #include <Eigen/Dense>
 #include "adapted_cuthill_mckee.h"
-#include "depth.h"
+#include "level.h"
 #include "io.h"
 #include "basic.h"
 
@@ -137,17 +137,17 @@ void test_adapted_cuthill_mckee (const Eigen::MatrixXf& A, Eigen::MatrixXf& P, E
     print_bandwidth_comparison(A, R);
 }
 
-void test_depth (const Eigen::MatrixXf& A, Eigen::MatrixXf& P, Eigen::MatrixXf& R)
+void test_levels(const Eigen::MatrixXf& A, Eigen::MatrixXf& P, Eigen::MatrixXf& R)
 {
-    apply_depth(A, P);
+    apply_levels(A, P);
 
     R = (P*A*P.transpose());
 
-    std::cout << "Applying depth approach: " << std::endl;
+    std::cout << "Applying level approach: " << std::endl;
     print_bandwidth_comparison(A, R);
 }
 
-void peak_mem (const std::string& file_name)
+void peak_mem(const std::string& file_name)
 {
     int N = read_N_from_file(file_name);
 
@@ -180,6 +180,6 @@ void peak_mem (const std::string& file_name)
     // 1. Adapted Cuthill-McKee approach
     test_adapted_cuthill_mckee(A, P, R, prec_O, succ_O);
 
-    // 2. Depth approach
-    test_depth(A, P, R);
+    // 2. Level approach
+    test_levels(A, P, R);
 }
