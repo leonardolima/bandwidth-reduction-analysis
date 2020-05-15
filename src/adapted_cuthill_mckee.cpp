@@ -5,6 +5,7 @@
 #include <limits>
 #include <chrono>
 #include <Eigen/Dense>
+#include "adapted_cuthill_mckee.h"
 #include "bandwidth_analysis/cuthill_mckee.h"
 #include "basic.h"
 #include "io.h"

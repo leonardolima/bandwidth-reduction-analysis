@@ -2,6 +2,7 @@
 #include <vector>
 #include <algorithm>
 #include <Eigen/Dense>
+#include "level.h"
 #include "basic.h"
 #include "io.h"
 

@@ -5,6 +5,7 @@
 #include <deque>
 #include <set>
 #include <Eigen/Dense>
+#include "io.h"
 #include "basic.h"
 
 void print_set (const std::set<int>& s)

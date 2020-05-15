@@ -1,6 +1,7 @@
 #include <Eigen/Dense>
 #include <iostream>
 #include <chrono>
+#include "compare_solvers.h"
 #include "lu_decomposition.h"
 #include "tridiagonal.h"
 #include "../io.h"

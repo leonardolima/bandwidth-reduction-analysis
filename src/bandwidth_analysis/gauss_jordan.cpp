@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <Eigen/Dense>
+#include "gauss_jordan.h"
 
 /*******************************************************************************
  * Checks if M*M^T is a diagonal matrix of 1's, i.e., if matrix is inversible.

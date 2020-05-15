@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <Eigen/Dense>
+#include "lu_decomposition.h"
 #include "../basic.h"
 
 /*******************************************************************************

@@ -4,6 +4,7 @@
 #include <limits>
 #include <chrono>
 #include <Eigen/Dense>
+#include "cuthill_mckee.h"
 #include "gauss_jordan.h"
 #include "tridiagonal.h"
 #include "../basic.h"

@@ -1,6 +1,7 @@
 #include <cmath>
 #include <iostream>
 #include <Eigen/Dense>
+#include "tridiagonal.h"
 
 /*******************************************************************************
  * Numerical Recipes' implementation of a method for solving tridiagonal

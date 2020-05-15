@@ -3,6 +3,7 @@
 #include <vector>
 #include <limits>
 #include <Eigen/Dense>
+#include "vns.h"
 #include "basic.h"
 
 // TODO: Change comments to Doxygen format

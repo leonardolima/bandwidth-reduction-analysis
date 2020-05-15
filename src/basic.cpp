@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <vector>
 #include <iostream>
+#include "basic.h"
 
 /*******************************************************************************
  * Calculates bandwidth of a particular matrix.

@@ -5,6 +5,7 @@
 #include <chrono>
 #include <map>
 #include <Eigen/Dense>
+#include "crank_nicolson.h"
 #include "cuthill_mckee.h"
 #include "gauss_jordan.h"
 #include "lu_decomposition.h"
