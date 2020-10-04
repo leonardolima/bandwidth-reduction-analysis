@@ -1,25 +1,25 @@
-#ifndef BANDWIDTH_MINIMIZATION_H
-#define BANDWIDTH_MINIMIZATION_H
+#ifndef CUTHILL_MCKEE_H
+#define CUTHILL_MCKEE_H
 
 #include <vector>
 #include <Eigen/Dense>
 
-void run_tests (int);
+void run_tests(int);
 
-void run_algorithm (const Eigen::MatrixXf&, Eigen::MatrixXf&, Eigen::MatrixXf&);
+void run_algorithm(const Eigen::MatrixXf&, Eigen::MatrixXf&, Eigen::MatrixXf&);
 
-bool node_has_label (const Eigen::MatrixXf&, unsigned int);
+bool node_has_label(const Eigen::MatrixXf&, unsigned int);
 
-int node_label (const Eigen::MatrixXf&, unsigned int);
+int node_label(const Eigen::MatrixXf&, unsigned int);
 
-int node_index (const Eigen::MatrixXf&, int);
+int node_index_adj_matrix(const Eigen::MatrixXf&, int);
 
-std::vector<std::pair<int, int>> sort_rows_deg (const Eigen::VectorXf&,
+std::vector<std::pair<int, int>> sort_adj_nodes(const Eigen::VectorXf&,
                                                 const std::vector<int>&,
                                                 const Eigen::MatrixXf&);
 
-int matrix_deg (const Eigen::MatrixXf&);
+int matrix_deg(const Eigen::MatrixXf&);
 
-std::vector<int> compute_rows_deg (const Eigen::MatrixXf&);
+std::vector<int> compute_nodes_deg(const Eigen::MatrixXf&);
 
 #endif

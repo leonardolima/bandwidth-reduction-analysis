@@ -5,8 +5,8 @@
 #include <limits>
 #include <chrono>
 #include <Eigen/Dense>
-#include "adapted_cuthill_mckee.h"
 #include "bandwidth_analysis/cuthill_mckee.h"
+#include "adapted_cuthill_mckee.h"
 #include "basic.h"
 #include "io.h"
 
@@ -76,11 +76,11 @@ void apply_label_to_node (Eigen::MatrixXf& P,
  * @param O             Ordering constraints (in the form L_x < [L_yi]).
  * @param initial_nodes List of nodes of each subgraph of the graph.
  ******************************************************************************/
-void adapted_nodal_numbering (const Eigen::MatrixXf& A, Eigen::MatrixXf& P,
-                              const std::vector<int>& rows_deg,
-                              const std::vector<std::vector<int>>& prec_O,
-                              const std::vector<std::vector<int>>& succ_O,
-                              const std::vector<int>& initial_nodes)
+void adapted_nodal_numbering(const Eigen::MatrixXf& A, Eigen::MatrixXf& P,
+                             const std::vector<int>& nodes_deg,
+                             const std::vector<std::vector<int>>& prec_O,
+                             const std::vector<std::vector<int>>& succ_O,
+                             const std::vector<int>& initial_nodes)
 {
     int N = A.cols();
     int new_label = 0;
@@ -115,14 +115,14 @@ void adapted_nodal_numbering (const Eigen::MatrixXf& A, Eigen::MatrixXf& P,
                 apply_label_to_node(P, prec_O, succ_O, d, n, new_label, visited_nodes, node_in_d);
             }
 
-            if (rows_deg[u] > 0)
+            if (nodes_deg[u] > 0)
             {
-                Eigen::VectorXf node_row = A.row(u);
-                std::vector<std::pair<int, int>> sorted_rows_deg = sort_rows_deg(node_row, rows_deg, P);
+                Eigen::VectorXf adj_nodes = A.row(u);
+                std::vector<std::pair<int, int>> sorted_adj_nodes = sort_adj_nodes(adj_nodes, nodes_deg, P);
 
-                for (std::vector<std::pair<int, int>>::size_type i = 0; i < sorted_rows_deg.size(); ++i)
+                for (std::vector<std::pair<int, int>>::size_type i = 0; i < sorted_adj_nodes.size(); ++i)
                 {
-                    int cur_node = sorted_rows_deg[i].second;
+                    int cur_node = sorted_adj_nodes[i].second;
                     if (visited_nodes[cur_node] == 0 && check_constraints(cur_node, new_label, P, prec_O, succ_O))
                     {
                         P(new_label++, cur_node) = 1;
@@ -170,17 +170,17 @@ std::vector<int> select_initial_nodes (const Eigen::MatrixXf& A)
  * @param R     Resulting matrix (i.e., P*A*P^T).
  * @param O     Ordering constraints (in the form L_x < [L_yi]).
  ******************************************************************************/
-void apply_adapted_cuthill_mckee (const Eigen::MatrixXf& A, const Eigen::MatrixXf& A_sym,
-                                  Eigen::MatrixXf& P, Eigen::MatrixXf& R,
-                                  const std::vector<std::vector<int>>& prec_O,
-                                  const std::vector<std::vector<int>>& succ_O)
+void apply_adapted_cuthill_mckee(const Eigen::MatrixXf& A, const Eigen::MatrixXf& A_sym,
+                                 Eigen::MatrixXf& P, Eigen::MatrixXf& R,
+                                 const std::vector<std::vector<int>>& prec_O,
+                                 const std::vector<std::vector<int>>& succ_O)
 {
     // std::cout << A << std::endl;
 
-    std::vector<int> rows_deg = compute_rows_deg(A_sym);
+    std::vector<int> nodes_deg = compute_nodes_deg(A_sym);
 
     // Starting node of each subgraph of A
     std::vector<int> initial_nodes = select_initial_nodes(A);
 
-    adapted_nodal_numbering(A_sym, P, rows_deg, prec_O, succ_O, initial_nodes);
+    adapted_nodal_numbering(A_sym, P, nodes_deg, prec_O, succ_O, initial_nodes);
 }
