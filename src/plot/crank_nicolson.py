@@ -2,6 +2,7 @@
 
 import matplotlib.pyplot as plt
 import pandas as pd
+import itertools
 
 def plot_runtime():
     N = [150, 222, 315, 416, 540, 670, 825, 984, 1170, 1358, 1575]
@@ -12,17 +13,24 @@ def plot_runtime():
 
     ax = plt.gca()
 
-    df.plot(kind='line', x='N', y='before', label='Runtime', ax=ax, color="tab:red", marker='s')
-    df.plot(kind='line', x='N', y='after', label='Runtime after bandwidth reduction', ax=ax, color="tab:blue", marker='s')
-    plt.title('Crank-Nicolson scheme\'s runtime for solving the Heat Equation in 2D (nsteps=1000)')
+    df.plot(kind='line', x='N', y='before', label='Execution time', ax=ax, color="tab:red", marker='s')
+    df.plot(kind='line', x='N', y='after', label='Execution time after bandwidth reduction', ax=ax, color="tab:blue", marker='s')
+    #plt.title('Crank-Nicolson scheme\'s runtime for solving the Heat Equation in 2D (nsteps=1000)')
 
-    plt.xticks(N)
-    plt.yticks(range(0, 12000, 500))
+    for (i,j) in zip(N[6:],before[6:]):
+        plt.annotate(' '+str(j)+'s', (i-175,j), fontsize=9)
+
+    for (i,j) in zip(N[6:],after[6:]):
+        plt.annotate(' '+str(j)+'s', (i-100,j+250), fontsize=9)
+
+    plt.xticks(N, fontsize=8)
+    plt.yticks(range(0, 12000, 1000))
 
     plt.xlabel('Matrix dimension')
     plt.ylabel('seconds')
     plt.grid(True)
-    plt.show()
+    plt.savefig('cnexectime.png', bbox_inches='tight')
+    #plt.show()
 
 def plot_bandwidth_reduction():
     N = [150, 222, 315, 416, 540, 670, 825, 984, 1170, 1358, 1575]
@@ -35,19 +43,28 @@ def plot_bandwidth_reduction():
 
     df.plot(kind='line', x='N', y='before', label='Bandwidth', ax=ax, color="tab:red", marker='s')
     df.plot(kind='line', x='N', y='after', label='Bandwidth after reduction', ax=ax, color="tab:blue", marker='s')
-    plt.title('Bandwidth reduction of the Cuthill-McKee algorithm')
+    #plt.title('Bandwidth reduction of the Cuthill-McKee algorithm')
 
-    plt.xticks(N)
+    for (i,j) in zip(N[1:-1],before[1:-1]):
+        plt.annotate(' '+str(j), (i+10,j-10), fontsize=9)
+
+    for (i,j) in zip(N[1:],after[1:]):
+        plt.annotate(' '+str(j), (i,j+7), fontsize=9)
+
+    plt.annotate('315', (1555,300), fontsize=9)
+
+    plt.xticks(N, fontsize=8)
     plt.yticks(range(0, 325, 25))
 
     plt.xlabel('Matrix dimension')
     plt.ylabel('Matrix bandwidth')
     plt.grid(True)
-    plt.show()
+    plt.savefig('cnbwreduc.png', bbox_inches='tight')
+    #plt.show()
 
 def main():
-    plot_runtime()
-    # plot_bandwidth_reduction()
+    #plot_runtime()
+    plot_bandwidth_reduction()
 
 if __name__ == "__main__":
     main()
