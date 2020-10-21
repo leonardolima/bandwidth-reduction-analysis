@@ -336,7 +336,7 @@ void diffusion_2d_irregular (int X, int Y, float L, float dt, int nsteps,
     float c = -dt/(2*pow(dx, 2));                // Offdiagonal coefficient
     float d = 1 - (2*(dt/pow(dx, 2)));           // Auxiliary coefficient used to solve b
 
-    // Initializing matrice and vectors
+    // Initializing matrices and vectors
     Eigen::MatrixXf H = Eigen::MatrixXf::Zero(N, N);
     Eigen::VectorXf U = Eigen::VectorXf::Zero(N);
     Eigen::VectorXf b = Eigen::VectorXf::Zero(N);

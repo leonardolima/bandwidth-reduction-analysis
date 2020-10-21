@@ -11,8 +11,8 @@ void print_queue(const std::queue<int>&);
 
 void print_deque(const std::deque<int>&);
 
-void print_set (const std::set<int>& s);
+void print_set(const std::set<int>& s);
 
-void print_bandwidth_comparison (const Eigen::MatrixXf&, const Eigen::MatrixXf&);
+void print_bandwidth_comparison(const Eigen::MatrixXf&, const Eigen::MatrixXf&);
 
 #endif
