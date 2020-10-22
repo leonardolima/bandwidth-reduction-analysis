@@ -4,6 +4,7 @@
 #include <Eigen/Dense>
 #include "adapted_cuthill_mckee.h"
 #include "level.h"
+#include "topological.h"
 #include "io.h"
 #include "basic.h"
 
@@ -129,7 +130,7 @@ void test_adapted_cuthill_mckee (const Eigen::MatrixXf& A, Eigen::MatrixXf& P, E
 
     apply_symmetry(A_sym);
 
-    apply_adapted_cuthill_mckee (A, A_sym, P, R, prec_O, succ_O);
+    apply_adapted_cuthill_mckee(A, A_sym, P, R, prec_O, succ_O);
 
     R = (P*A*P.transpose());
 
@@ -144,6 +145,16 @@ void test_levels(const Eigen::MatrixXf& A, Eigen::MatrixXf& P, Eigen::MatrixXf& 
     R = (P*A*P.transpose());
 
     std::cout << "Applying level approach: " << std::endl;
+    print_bandwidth_comparison(A, R);
+}
+
+void test_topological(const Eigen::MatrixXf& A, Eigen::MatrixXf& P, Eigen::MatrixXf& R)
+{
+    apply_topological(A, P);
+
+    R = (P*A*P.transpose());
+
+    std::cout << "Applying topological approach: " << std::endl;
     print_bandwidth_comparison(A, R);
 }
 
@@ -178,8 +189,11 @@ void peak_mem(const std::string& file_name)
     // }
 
     // 1. Adapted Cuthill-McKee approach
-    test_adapted_cuthill_mckee(A, P, R, prec_O, succ_O);
+    //test_adapted_cuthill_mckee(A, P, R, prec_O, succ_O);
 
     // 2. Level approach
-    test_levels(A, P, R);
+    //test_levels(A, P, R);
+
+    // 2. Topological sorting
+    test_topological(A, P, R);
 }

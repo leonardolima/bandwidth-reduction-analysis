@@ -51,7 +51,6 @@ void visit(const std::vector<std::vector<int>>& children,
            std::vector<int>& sorted_nodes,
            int node)
 {
-    std::cout << "Visiting node " << node << std::endl;
     if(mark[node] == 1) return;
 
     for (std::vector<std::vector<int>>::size_type i = 0; i < children[node].size(); ++i)
@@ -82,11 +81,12 @@ void topological_sorting(const std::vector<std::vector<int>>& children,
     std::vector<int> mark(children.size());
 
     visit(children, mark, sorted_nodes, starting_node); // If graph is connected this is enough
-
     std::vector<int>::iterator iter = std::find(mark.begin(), mark.end(), 0);
+
     while(iter != mark.end())
     {
-        visit(children, mark, sorted_nodes, *iter);
+        visit(children, mark, sorted_nodes, iter-mark.begin());
+
         iter = std::find(mark.begin(), mark.end(), 0);
     }
 }
