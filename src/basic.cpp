@@ -66,6 +66,16 @@ void children_from_matrix(const Eigen::MatrixXf& A, std::vector<std::vector<int>
     }
 }
 
+void mem_from_matrix(const Eigen::MatrixXf& A, std::vector<int>& mem)
+{
+    int N = A.rows();
+
+    for (int i = 0; i < N; ++i)
+    {
+        mem[i] = A(i,i);
+    }
+}
+
 void apply_symmetry (Eigen::MatrixXf& A)
 {
     for (int i = 0; i < A.rows(); ++i)

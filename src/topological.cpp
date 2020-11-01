@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <Eigen/Dense>
 #include "topological.h"
+#include "peak_mem.h"
 #include "basic.h"
 #include "io.h"
 
@@ -29,37 +30,7 @@ std::vector<std::pair<int, int>> make_sorted_pairs(const std::vector<int> sorted
 
     std::sort(sorted_pairs.begin(), sorted_pairs.end());
 
-    // for (std::vector<int>::size_type i = 0; i < sorted_pairs.size(); ++i)
-    // {
-    //     std::cout << "sorted_pairs[" << i << "] = (" << sorted_pairs[i].first << ", " << sorted_pairs[i].second << ")" << std::endl;
-    // }
-
     return sorted_pairs;
-}
-
-void select_starting_nodes(const std::vector<std::vector<int>>& parents,
-                           std::vector<int>& starting_nodes)
-{
-    for (std::vector<std::vector<int>>::size_type i = 0; i < parents.size(); ++i)
-    {
-        if (parents[i].empty()) starting_nodes.push_back(i);
-    }
-}
-
-void visit(const std::vector<std::vector<int>>& children,
-           std::vector<int>& mark,
-           std::vector<int>& sorted_nodes,
-           int node)
-{
-    if(mark[node] == 1) return;
-
-    for (std::vector<std::vector<int>>::size_type i = 0; i < children[node].size(); ++i)
-    {
-        visit(children, mark, sorted_nodes, children[node][i]);
-    }
-
-    mark[node] = 1;
-    sorted_nodes.insert(sorted_nodes.begin(), node);
 }
 
 /*******************************************************************************
@@ -75,20 +46,37 @@ void visit(const std::vector<std::vector<int>>& children,
  * @param sorted_nodes Resulting vector with sorted nodes
  ******************************************************************************/
 void topological_sorting(const std::vector<std::vector<int>>& children,
-                         std::vector<int>& sorted_nodes,
-                         int starting_node)
+                         std::vector<std::vector<int>>& possible_paths,
+                         std::vector<int>& path,
+                         std::vector<int>& indegree,
+                         std::vector<bool>& marked,
+                         const size_t num_nodes)
 {
-    std::vector<int> mark(children.size());
-
-    visit(children, mark, sorted_nodes, starting_node); // If graph is connected this is enough
-    std::vector<int>::iterator iter = std::find(mark.begin(), mark.end(), 0);
-
-    while(iter != mark.end())
+    for(size_t i = 0; i < num_nodes; ++i)
     {
-        visit(children, mark, sorted_nodes, iter-mark.begin());
+        if(indegree[i] == 0 && !marked[i])
+        {
+            for(std::vector<int>::size_type j = 0; j < children[i].size(); ++j)
+            {
+                indegree[children[i][j]]--;
+            }
 
-        iter = std::find(mark.begin(), mark.end(), 0);
+            path.push_back(i);
+            marked[i] = true;
+            topological_sorting(children, possible_paths, path, indegree, marked, num_nodes);
+
+            // Backtracking
+            for(std::vector<int>::size_type j = 0; j < children[i].size(); ++j)
+            {
+                indegree[children[i][j]]++;
+            }
+
+            path.pop_back();
+            marked[i] = false;
+        }
     }
+
+    if(path.size() == num_nodes) possible_paths.push_back(path);
 }
 
 /*******************************************************************************
@@ -100,35 +88,62 @@ void topological_sorting(const std::vector<std::vector<int>>& children,
  ******************************************************************************/
 void apply_topological(const Eigen::MatrixXf& A, Eigen::MatrixXf& P)
 {
-    size_t A_dim = A.rows(); // Matrix dimension
+    const size_t num_nodes = A.rows(); // Matrix dimension
 
-    Eigen::MatrixXf M = Eigen::MatrixXf::Zero(A_dim, A_dim);
-    Eigen::MatrixXf R = Eigen::MatrixXf::Zero(A_dim, A_dim);
+    Eigen::MatrixXf M = Eigen::MatrixXf::Zero(num_nodes, num_nodes);
+    Eigen::MatrixXf R = Eigen::MatrixXf::Zero(num_nodes, num_nodes);
 
-    std::vector<std::vector<int>> children(A_dim), parents(A_dim);
+    std::vector<std::vector<int>> children(num_nodes), parents(num_nodes), possible_paths;
+    std::vector<int> indegree(num_nodes), path;
+    std::vector<bool> marked(num_nodes);
 
-    std::vector<int> sorted_nodes, starting_nodes;
-
-    int min_bandwidth = std::numeric_limits<int>::max();
+    // int min_bandwidth = std::numeric_limits<int>::max();
+    int min_peak = std::numeric_limits<int>::max();
 
     children_from_matrix(A, children);
     parents_from_matrix(A, parents);
-    select_starting_nodes(parents, starting_nodes);
 
-    // Check if std::vector<std::vector<int>>::size_type can be replaced with auto
-    for (std::vector<std::vector<int>>::size_type i = 0; i < starting_nodes.size(); ++i)
+    for(std::vector<std::vector<int>>::size_type i = 0; i < parents.size(); ++i)
     {
-        topological_sorting(children, sorted_nodes, starting_nodes[i]);
-        label_sorted_nodes(A, P, make_sorted_pairs(sorted_nodes));
+        indegree[i] = parents[i].size();
+    }
+
+    topological_sorting(children, possible_paths, path, indegree, marked, num_nodes);
+
+    // for(std::vector<std::vector<int>>::size_type i = 0; i < possible_paths.size(); ++i)
+    // {
+    //     label_sorted_nodes(A, P, make_sorted_pairs(possible_paths[i]));
+    //     M = (P*A*P.transpose());
+    //     int M_bandwidth = matrix_bandwidth(M);
+    //     if(M_bandwidth < min_bandwidth)
+    //     {
+    //         R = P;
+    //         min_bandwidth = M_bandwidth;
+    //     }
+    //     P.setZero();
+    // }
+    // P = R;
+
+    for(std::vector<std::vector<int>>::size_type i = 0; i < possible_paths.size(); ++i)
+    {
+        int peak = peak_mem(A, possible_paths[i]);
+
+        // for(size_t j = 0; j < num_nodes; ++j)
+        // {
+        //     std::cout << possible_paths[i][j] << " ";
+        // }
+        // std::cout << std::endl;
+
+        // std::cout << "peak = " << peak << std::endl;
+        label_sorted_nodes(A, P, make_sorted_pairs(possible_paths[i]));
         M = (P*A*P.transpose());
-        int M_bandwidth = matrix_bandwidth(M);
-        if (M_bandwidth < min_bandwidth)
+        if(peak < min_peak)
         {
             R = P;
-            min_bandwidth = M_bandwidth;
+            min_peak = peak;
         }
-        sorted_nodes.clear();
         P.setZero();
     }
+    std::cout << "min_peak = " << min_peak << std::endl;
     P = R;
 }
