@@ -1,199 +1,115 @@
 #include <iostream>
-#include <fstream>
 #include <vector>
+#include <deque>
 #include <Eigen/Dense>
-#include "adapted_cuthill_mckee.h"
-#include "level.h"
-#include "topological.h"
-#include "io.h"
+#include "peak_mem.h"
 #include "basic.h"
 
-/*******************************************************************************
- * Lists each integer of a particular string.
- *
- *
- * @param s String.
- * @param del Delimiter between integers.
- ******************************************************************************/
-std::vector<int> string_split (const std::string& s, const char del)
+void update_peak(int cur_mem, int& peak)
 {
-    std::vector<int> tokens;
-    std::string token;
-    std::istringstream token_stream(s);
-
-    while(std::getline(token_stream, token, del))
-    {
-        tokens.push_back(std::stoi(token));
-    }
-
-    return tokens;
+    if (cur_mem > peak) peak = cur_mem;
 }
 
-int read_N_from_file (const std::string& file_name)
+void free_parents(const std::vector<std::vector<int>>& parents,
+                  const std::vector<int>& outdegree,
+                  const std::vector<int>& mem,
+                  int& cur_mem, int node)
 {
-    std::ifstream file(file_name);
-    if (!file.is_open()) return -1;
-
-    std::string line;
-    std::getline(file, line);
-    int N = std::stoi(line);
-
-    file.close();
-
-    return N;
-}
-
-/*******************************************************************************
- * From the input file, generates a matrix A representing the graph and a vector
- * O in order to check the ordering when applying the chosen algorithm.
- *
- * Input file has the following format:
- * First line corresponds to the number of nodes (N)
- * From the second line onwards:
- * n1 o1 (i.e., node 1 has output size o1)
- * n2 o2 n1 (i.e., node 2 has output size o2 and receives n1 as input)
- *
- * @param file_name String containing file's name.
- * @param A Adjacency matrix of the graph.
- * @param O Ordering constraints (given in the form L_x > [L_yi]).
- ******************************************************************************/
-void read_file (const std::string& file_name, Eigen::MatrixXf& A,
-                std::vector<std::vector<int>>& O, int N)
-{
-    std::vector<std::vector<int>> tokens(N);
-
-    // File initialization
-    std::ifstream file(file_name);
-
-    if (!file.is_open()) return;
-
-    // Read first line and ignore (we already know N)
-    std::string line;
-    std::getline(file, line);
-
-    // Reading file line by line
-    int i = 0;
-
-    while (std::getline(file, line))
+    // Free nodes that don't have children yet to be processed
+    for(std::vector<int>::size_type j = 0; j < parents[node].size(); ++j)
     {
-        tokens[i] = string_split(line, ' ');
-
-        A(i, i) = float(tokens[i][0]);
-
-        for (std::vector<int>::size_type j = 1; j < tokens[i].size(); ++j)
+        if (outdegree[parents[node][j]] == 0)
         {
-            O[i].push_back(tokens[i][j]);
-        }
-
-        i++;
-    }
-
-    // Update matrix A only after all data is read
-    for (std::vector<std::vector<int>>::size_type i = 0; i < tokens.size(); ++i)
-    {
-        for (std::vector<int>::size_type j = 1; j < tokens[i].size(); ++j)
-        {
-            A(i, tokens[i][j]) = A(tokens[i][j], tokens[i][j]);
-        }
-    }
-
-    file.close();
-}
-
-/*******************************************************************************
- * Changes constraints format.
- *
- * Constraints are given in the form L_x > [L_yi], but in order to keep search
- * O(1) the format is changed to L_x < [L_yi].
- *
- *
- * @param O     Ordering constraints (in the form L_x > [L_yi]).
- * @param new_O Ordering constraints (in the form L_x < [L_yi]).
- ******************************************************************************/
-void convert_vector (const std::vector<std::vector<int>>& O,
-                     std::vector<std::vector<int>>& new_O)
-{
-    for (std::vector<std::vector<int>>::size_type i = 0; i < O.size(); ++i)
-    {
-        for (std::vector<int>::size_type j = 0; j < O[i].size(); ++j)
-        {
-            new_O[O[i][j]].push_back(i);
+            // std::cout << "Freeing: " << parents[node][j] << std::endl;
+            cur_mem -= mem[parents[node][j]];
         }
     }
 }
 
-void test_adapted_cuthill_mckee (const Eigen::MatrixXf& A, Eigen::MatrixXf& P, Eigen::MatrixXf& R,
-                                 const std::vector<std::vector<int>>& prec_O,
-                                 const std::vector<std::vector<int>>& succ_O)
+bool process_node(const std::vector<std::vector<int>>& children,
+                  const std::vector<std::vector<int>>& parents,
+                  const std::vector<int>& mem, std::vector<int>& indegree,
+                  std::vector<int>& outdegree, int& peak, int& cur_mem, int node)
 {
-    Eigen::MatrixXf A_sym = A;
+    // 1. Process a node if it can be processed, i.e., if all parents have already
+    //    been processed
+    if (indegree[node] == 0)
+    {
+        cur_mem += mem[node];
+        update_peak(cur_mem, peak);
 
-    apply_symmetry(A_sym);
+        // std::cout << "Processing: " << node << std::endl;
+        // std::cout << "cur_mem = " << cur_mem << std::endl;
+        // std::cout << "peak = " << peak << std::endl;
 
-    apply_adapted_cuthill_mckee(A, A_sym, P, R, prec_O, succ_O);
+        for(std::vector<int>::size_type j = 0; j < children[node].size(); ++j)
+        {
+            indegree[children[node][j]]--;
+        }
 
-    R = (P*A*P.transpose());
+        for(std::vector<int>::size_type j = 0; j < parents[node].size(); ++j)
+        {
+            outdegree[parents[node][j]]--;
+        }
 
-    std::cout << "Applying adapted Cuthill-McKee algorithm: " << std::endl;
-    print_bandwidth_comparison(A, R);
+        free_parents(parents, outdegree, mem, cur_mem, node);
+        return true;
+    } else {
+        free_parents(parents, outdegree, mem, cur_mem, node);
+        return false;
+    }
 }
 
-void test_levels(const Eigen::MatrixXf& A, Eigen::MatrixXf& P, Eigen::MatrixXf& R)
+int compute_peak_mem(const std::vector<std::vector<int>>& children,
+                     const std::vector<std::vector<int>>& parents,
+                     const std::vector<int>& mem, const std::vector<int>& path,
+                     std::vector<int>& indegree, std::vector<int>& outdegree)
 {
-    apply_levels(A, P);
+    int cur_mem = 0, peak = 0;
+    std::deque<int> to_free;
 
-    R = (P*A*P.transpose());
-
-    std::cout << "Applying level approach: " << std::endl;
-    print_bandwidth_comparison(A, R);
+    for(std::vector<int>::size_type i = 0; i < path.size(); ++i)
+    {
+        for (std::deque<int>::size_type j = 0; j < to_free.size(); ++j)
+        {
+            int node = to_free.front();
+            if (process_node(children, parents, mem, indegree, outdegree, peak, cur_mem, node))
+            {
+                to_free.pop_front();
+            }
+        }
+        if (!process_node(children, parents, mem, indegree, outdegree, peak, cur_mem, path[i]))
+        {
+            to_free.push_back(path[i]);
+        }
+    }
+    return peak;
 }
 
-void test_topological(const Eigen::MatrixXf& A, Eigen::MatrixXf& P, Eigen::MatrixXf& R)
+/*******************************************************************************
+ * Considering a directed acyclic graph corresponding to a computer program and
+ * a particular path, computes its peak memory usage
+ *
+ *
+ * @param A matrix representation of the graph
+ * @param path Contains a possible path in the graph
+ ******************************************************************************/
+int peak_mem(const Eigen::MatrixXf& A, const std::vector<int>& path)
 {
-    apply_topological(A, P);
+    const size_t num_nodes = A.rows();
 
-    R = (P*A*P.transpose());
+    std::vector<std::vector<int>> parents(num_nodes), children(num_nodes);
+    std::vector<int> mem(num_nodes), indegree(num_nodes), outdegree(num_nodes);
 
-    std::cout << "Applying topological approach: " << std::endl;
-    print_bandwidth_comparison(A, R);
-}
+    parents_from_matrix(A, parents);
+    children_from_matrix(A, children);
+    mem_from_matrix(A, mem);
 
-void peak_mem(const std::string& file_name)
-{
-    int N = read_N_from_file(file_name);
+    for(std::vector<std::vector<int>>::size_type i = 0; i < parents.size(); ++i)
+    {
+        indegree[i] = parents[i].size();
+        outdegree[i] = children[i].size();
+    }
 
-    // Adjacency matrix representing the graph
-    Eigen::MatrixXf A = Eigen::MatrixXf::Identity(N, N);
-
-    // Permutation matrix (in case of Cuthill-McKee algorithm)
-    Eigen::MatrixXf P = Eigen::MatrixXf::Zero(N, N);
-
-    // Resulting matrix
-    Eigen::MatrixXf R = Eigen::MatrixXf::Zero(N, N);
-
-    // Vector corresponding to the ordering L_x > [L_yi]
-    std::vector<std::vector<int>> prec_O(N);
-
-    // Vector corresponding to the ordering L_x < [L_yi]
-    std::vector<std::vector<int>> succ_O(N);
-
-    read_file(file_name, A, prec_O, N);
-
-    convert_vector(prec_O, succ_O);
-
-    // for (std::vector<std::vector<int>>::size_type i = 0; i < succ_O.size(); ++i)
-    // {
-    //     std::cout << "succ_O[" << i << "] = ";
-    //     for (std::vector<int>::size_type j = 0; j < succ_O[i].size(); ++j) std::cout << succ_O[i][j] << " ";
-    //     std::cout << std::endl;
-    // }
-
-    // 1. Adapted Cuthill-McKee approach
-    //test_adapted_cuthill_mckee(A, P, R, prec_O, succ_O);
-
-    // 2. Level approach
-    //test_levels(A, P, R);
-
-    // 2. Topological sorting
-    test_topological(A, P, R);
+    return compute_peak_mem(children, parents, mem, path, indegree, outdegree);
 }
