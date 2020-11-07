@@ -86,3 +86,25 @@ void apply_symmetry (Eigen::MatrixXf& A)
                 }
         }
 }
+
+/*******************************************************************************
+ * Calculates the degree of each node (by definition it is the number of
+ * non-zero off-diagonal elements).
+ *
+ *
+ * @param A Adjacency matrix.
+ ******************************************************************************/
+std::vector<int> compute_nodes_deg(const Eigen::MatrixXf& A)
+{
+    std::vector<int> nodes_deg(A.rows(), 0); // A is square
+
+    for(int j = 0; j < A.cols(); ++j)
+    {
+        for (int i = 0; i < A.rows(); ++i)
+        {
+            if (A(i,j) != 0 && i != j) nodes_deg[i] += 1;
+        }
+    }
+
+    return nodes_deg;
+}

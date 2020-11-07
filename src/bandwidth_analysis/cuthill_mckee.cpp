@@ -137,28 +137,6 @@ int matrix_deg(const Eigen::MatrixXf& R)
 }
 
 /*******************************************************************************
- * Calculates the degree of each node (by definition it is the number of
- * non-zero off-diagonal elements).
- *
- *
- * @param A Adjacency matrix.
- ******************************************************************************/
-std::vector<int> compute_nodes_deg(const Eigen::MatrixXf& A)
-{
-    std::vector<int> nodes_deg(A.rows(), 0); // A is square
-
-    for(int j = 0; j < A.cols(); ++j)
-    {
-        for (int i = 0; i < A.rows(); ++i)
-        {
-            if (A(i,j) != 0 && i != j) nodes_deg[i] += 1;
-        }
-    }
-
-    return nodes_deg;
-}
-
-/*******************************************************************************
  * Select starting nodes, uses the heuristic described on the paper of picking
  * all the lowest degree nodes.
  *
@@ -211,20 +189,23 @@ std::vector<int> select_starting_nodes(const Eigen::MatrixXf& A)
 void compute_matrices(const std::vector<int>& starting_nodes, const Eigen::MatrixXf& A,
                       Eigen::MatrixXf& P, Eigen::MatrixXf& R)
 {
-    int max_mat_deg = std::numeric_limits<int>::max(); // max_mat_deg = \infty
+    int max_bandwidth = std::numeric_limits<int>::max(); // max_bandwidth = \infty
 
     Eigen::MatrixXf M = Eigen::MatrixXf::Zero(A.rows(), A.cols());
-
     std::vector<int> nodes_deg = compute_nodes_deg(A);
 
     for(std::vector<int>::size_type i = 0; i < starting_nodes.size(); ++i)
     {
-        P(0, starting_nodes[i]) = 1;          // Starting node is labeled as 0
-        nodal_numbering(A, P, nodes_deg);     // Execute algorithm on A
-        M = (P*A*P.transpose());              // Compute resulting matrix M
-        int mat_deg = matrix_deg(M);          // Compute resulting matrix degree
-        if (mat_deg < max_mat_deg) R = M;     // Keep matrix M with lowest degree
-        P.setZero();                          // Clear P matrix
+        P(0, starting_nodes[i]) = 1;           // Starting node is labeled as 0
+        nodal_numbering(A, P, nodes_deg);      // Execute algorithm on A
+        M = (P*A*P.transpose());               // Compute resulting matrix M
+        int M_bandwidth = matrix_bandwidth(M); // Compute resulting matrix bandwidth
+        if (M_bandwidth < max_bandwidth)
+        {
+            R = M;                             // Keep matrix M with lowest bandwidth
+            max_bandwidth = M_bandwidth;       // Update max_bandwidth
+        }
+        P.setZero();                           // Clear P matrix
     }
 
     std::cout << "dim(A) = " << A.rows() << "x" << A.cols() << std::endl;

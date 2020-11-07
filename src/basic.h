@@ -13,4 +13,6 @@ void mem_from_matrix(const Eigen::MatrixXf&, std::vector<int>&);
 
 void apply_symmetry (Eigen::MatrixXf&);
 
+std::vector<int> compute_nodes_deg(const Eigen::MatrixXf&);
+
 #endif

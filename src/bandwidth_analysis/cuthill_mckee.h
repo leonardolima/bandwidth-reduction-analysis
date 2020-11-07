@@ -20,6 +20,4 @@ std::vector<std::pair<int, int>> sort_adj_nodes(const Eigen::VectorXf&,
 
 int matrix_deg(const Eigen::MatrixXf&);
 
-std::vector<int> compute_nodes_deg(const Eigen::MatrixXf&);
-
 #endif
