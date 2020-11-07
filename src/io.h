@@ -15,4 +15,7 @@ void print_set(const std::set<int>& s);
 
 void print_bandwidth_comparison(const Eigen::MatrixXf&, const Eigen::MatrixXf&);
 
+void print_peak_comparison(const Eigen::MatrixXf&, const std::vector<int>&,
+                           const std::vector<int>&);
+
 #endif
