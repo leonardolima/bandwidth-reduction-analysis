@@ -63,7 +63,7 @@ void nodal_numbering(const std::vector<std::vector<int>>& parents,
                      std::vector<int> indegree, // Copy
                      int num_nodes)
 {
-    int seen = 0, counter = 0;
+    int seen = 0;
     std::vector<int> disconnected_nodes = list_disconnected_nodes(parents, children);
 
     // Process disconnected nodes
@@ -75,10 +75,12 @@ void nodal_numbering(const std::vector<std::vector<int>>& parents,
     // Connected nodes
     while(seen < num_nodes)
     {
-        // Starting node
-        // std::cout << "starting_node = " << starting_nodes[counter] << std::endl;
-        process_node(children, path, indegree, marked, seen, num_nodes, starting_nodes[counter]);
-        counter++;
+        for(std::vector<int>::size_type i = 0; i < starting_nodes.size(); ++i)
+        {
+            // Starting nodes
+            // std::cout << "starting_node = " << starting_nodes[i] << std::endl;
+            process_node(children, path, indegree, marked, seen, num_nodes, starting_nodes[i]);
+        }
 
         // std::cout << "seen = " << seen << std::endl;
         for(int i = 0; i < num_nodes; ++i)
@@ -89,15 +91,33 @@ void nodal_numbering(const std::vector<std::vector<int>>& parents,
     }
 }
 
-std::vector<int> select_starting_nodes(const std::vector<std::vector<int>>& parents,
+std::vector<int> select_starting_nodes(const Eigen::MatrixXf& A,
+                                       const std::vector<std::vector<int>>& parents,
                                        const std::vector<std::vector<int>>& children)
 {
     std::vector<int> starting_nodes;
+    std::vector<std::pair<int, int>> pairs;
 
     // Starting nodes in each component of the graph
     for(std::vector<std::vector<int>>::size_type i = 0; i < parents.size(); ++i)
     {
         if(parents[i].empty() && !children[i].empty()) starting_nodes.push_back(i);
+    }
+
+    // Sort them according with their degree
+    std::vector<int> nodes_deg = compute_nodes_deg(A);
+
+    for(std::vector<int>::size_type i = 0; i < starting_nodes.size(); ++i)
+    {
+        std::pair<int, int> pair = std::make_pair(nodes_deg[starting_nodes[i]], starting_nodes[i]);
+        pairs.push_back(pair);
+    }
+
+    std::sort(pairs.begin(), pairs.end());
+
+    for(std::vector<int>::size_type i = 0; i < starting_nodes.size(); ++i)
+    {
+        starting_nodes[i] = pairs[i].second;
     }
 
     return starting_nodes;
@@ -146,19 +166,13 @@ void sort_children(const Eigen::MatrixXf& A, std::vector<std::vector<int>>& chil
  * @param P     Permutation matrix.
  ******************************************************************************/
 void apply_adapted_cuthill_mckee(const Eigen::MatrixXf& A, Eigen::MatrixXf& P,
-                                 std::vector<int>& worst_path, std::vector<int>& chosen_path)
+                                 std::vector<int>& path)
 {
     int num_nodes = A.rows(); // Matrix dimension
-
-    Eigen::MatrixXf R = Eigen::MatrixXf::Zero(num_nodes, num_nodes);
 
     std::vector<std::vector<int>> children(num_nodes), parents(num_nodes);
     std::vector<int> indegree(num_nodes), outdegree(num_nodes), starting_nodes;
     std::vector<bool> marked(num_nodes, false);
-    std::vector<int> path;
-
-    int min_peak = std::numeric_limits<int>::max();
-    int max_peak = 0;
 
     children_from_matrix(A, children);
     parents_from_matrix(A, parents);
@@ -170,33 +184,27 @@ void apply_adapted_cuthill_mckee(const Eigen::MatrixXf& A, Eigen::MatrixXf& P,
     }
 
     sort_children(A, children);
-    starting_nodes = select_starting_nodes(parents, children);
+    starting_nodes = select_starting_nodes(A, parents, children);
 
-    do {
-        nodal_numbering(parents, children, starting_nodes, path, marked, indegree, num_nodes);
+    //////////////////////////////////////////////////////////
+    // std::cout << "starting_nodes = ";
+    // for(std::vector<int>::size_type i = 0; i < starting_nodes.size(); ++i)
+    // {
+    //     std::cout << starting_nodes[i] << " ";
+    // }
+    // std::cout << std::endl;
+    //////////////////////////////////////////////////////////
 
-        int peak = peak_mem(A, path);
+    nodal_numbering(parents, children, starting_nodes, path, marked, indegree, num_nodes);
 
-        label_sorted_nodes(A, R, make_sorted_pairs(path));
+    //////////////////////////////////////////////////////////
+    // std::cout << "path = ";
+    // for(std::vector<int>::size_type i = 0; i < path.size(); ++i)
+    // {
+    //     std::cout << path[i] << " ";
+    // }
+    // std::cout << std::endl;
+    //////////////////////////////////////////////////////////
 
-        // Maximum peak memory usage
-        if(peak > max_peak)
-        {
-            max_peak = peak;
-            worst_path = path;
-        }
-
-        // Minimum peak memory usage
-        if(peak < min_peak)
-        {
-            P = R;
-            min_peak = peak;
-            chosen_path = path;
-        }
-
-        // Clearing/resetting auxiliary vectors
-        std::fill(marked.begin(), marked.end(), false);
-        path.clear();
-        R.setZero();
-    } while(std::next_permutation(starting_nodes.begin(), starting_nodes.end()));
+    label_sorted_nodes(A, P, make_sorted_pairs(path));
 }

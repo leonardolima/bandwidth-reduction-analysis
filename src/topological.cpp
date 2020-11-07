@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <set>
 #include <Eigen/Dense>
 #include "topological.h"
 #include "peak_mem.h"
@@ -60,8 +61,8 @@ void topological_sorting(const std::vector<std::vector<int>>& children,
  * @param A     Adjacency matrix.
  * @param P     Permutation matrix.
  ******************************************************************************/
-void apply_topological(const Eigen::MatrixXf& A, Eigen::MatrixXf& P,
-                       std::vector<int>& worst_path, std::vector<int>& chosen_path)
+void apply_topological_all(const Eigen::MatrixXf& A, Eigen::MatrixXf& P,
+                           std::vector<int>& chosen_path)
 {
     const size_t num_nodes = A.rows(); // Matrix dimension
 
@@ -72,7 +73,6 @@ void apply_topological(const Eigen::MatrixXf& A, Eigen::MatrixXf& P,
     std::vector<bool> marked(num_nodes);
 
     int min_peak = std::numeric_limits<int>::max();
-    int max_peak = 0;
 
     children_from_matrix(A, children);
     parents_from_matrix(A, parents);
@@ -89,13 +89,6 @@ void apply_topological(const Eigen::MatrixXf& A, Eigen::MatrixXf& P,
         int peak = peak_mem(A, possible_paths[i]);
         label_sorted_nodes(A, R, make_sorted_pairs(possible_paths[i]));
 
-        // Maximum peak memory usage
-        if(peak > max_peak)
-        {
-            max_peak = peak;
-            worst_path = possible_paths[i];
-        }
-
         // Minimum peak memory usage
         if(peak < min_peak)
         {
@@ -106,4 +99,43 @@ void apply_topological(const Eigen::MatrixXf& A, Eigen::MatrixXf& P,
 
         R.setZero();
     }
+}
+
+void apply_topological(const Eigen::MatrixXf& A,
+                       std::vector<int>& path)
+{
+    int num_nodes = A.rows(); // Matrix dimension
+    std::vector<std::vector<int>> children(num_nodes), parents(num_nodes);
+    std::vector<int> indegree(num_nodes);
+    std::set<int> roots;
+
+    children_from_matrix(A, children);
+    parents_from_matrix(A, parents);
+
+    for(std::vector<std::vector<int>>::size_type i = 0; i < parents.size(); ++i)
+    {
+        indegree[i] = parents[i].size();
+        if (indegree[i] == 0) roots.insert(i);
+    }
+
+    while(!roots.empty())
+    {
+        auto it = roots.begin();
+        int node = *it;
+        roots.erase(it);
+        path.push_back(node);
+        for(std::vector<int>::size_type j = 0; j < children[node].size(); ++j)
+        {
+            indegree[children[node][j]]--;
+            if(indegree[children[node][j]] == 0) roots.insert(children[node][j]);
+        }
+
+    }
+
+    // std::cout << "path = ";
+    // for(std::vector<int>::size_type i = 0; i < path.size(); ++i)
+    // {
+    //     std::cout << path[i] << " ";
+    // }
+    // std::cout << std::endl;
 }

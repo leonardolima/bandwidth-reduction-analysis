@@ -1,0 +1,599 @@
+File: Base64_Encoder_yxmc.txt
+-------------------------------------------
+Applying adapted Cuthill-McKee approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 23x23
+bandwidth(A) = 15
+bandwidth(R) = 17
+peak = 781
+peak (random path) = 654
+-------------------------------------------
+
+File: Cleanse_yxmc.txt
+-------------------------------------------
+Applying adapted Cuthill-McKee approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 35x35
+bandwidth(A) = 24
+bandwidth(R) = 24
+peak = 1178
+peak (random path) = 680
+-------------------------------------------
+
+File: CountRecords_yxmc.txt
+-------------------------------------------
+Applying adapted Cuthill-McKee approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 9x9
+bandwidth(A) = 3
+bandwidth(R) = 3
+peak = 166
+peak (random path) = 166
+-------------------------------------------
+
+File: DateTimeNow_yxmc.txt
+-------------------------------------------
+Applying adapted Cuthill-McKee approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 7x7
+bandwidth(A) = 4
+bandwidth(R) = 3
+peak = 147
+peak (random path) = 147
+-------------------------------------------
+
+File: Date_Filter_yxmc.txt
+-------------------------------------------
+Applying adapted Cuthill-McKee approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 25x25
+bandwidth(A) = 24
+bandwidth(R) = 20
+peak = 303
+peak (random path) = 303
+-------------------------------------------
+
+File: FooterMacro_yxmc.txt
+-------------------------------------------
+Applying adapted Cuthill-McKee approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 21x21
+bandwidth(A) = 13
+bandwidth(R) = 13
+peak = 588
+peak (random path) = 588
+-------------------------------------------
+
+File: Frequency_yxmc.txt
+-------------------------------------------
+Applying adapted Cuthill-McKee approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 34x34
+bandwidth(A) = 27
+bandwidth(R) = 20
+peak = 1431
+peak (random path) = 1441
+-------------------------------------------
+
+File: Google_Analytics_v5_yxmc.txt
+-------------------------------------------
+Applying adapted Cuthill-McKee approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 123x123
+bandwidth(A) = 74
+bandwidth(R) = 102
+peak = 11482
+peak (random path) = 9122
+-------------------------------------------
+
+File: Google_Analytics_v6_yxmc.txt
+-------------------------------------------
+Applying adapted Cuthill-McKee approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 123x123
+bandwidth(A) = 74
+bandwidth(R) = 102
+peak = 11500
+peak (random path) = 9120
+-------------------------------------------
+
+File: Google_Analytics_yxmc.txt
+-------------------------------------------
+Applying adapted Cuthill-McKee approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 108x108
+bandwidth(A) = 83
+bandwidth(R) = 53
+peak = 10887
+peak (random path) = 7789
+-------------------------------------------
+
+File: HeaderMacro_yxmc.txt
+-------------------------------------------
+Applying adapted Cuthill-McKee approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 34x34
+bandwidth(A) = 25
+bandwidth(R) = 27
+peak = 864
+peak (random path) = 892
+-------------------------------------------
+
+File: HeatMap_yxmc.txt
+-------------------------------------------
+Applying adapted Cuthill-McKee approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 95x95
+bandwidth(A) = 67
+bandwidth(R) = 66
+peak = 2145
+peak (random path) = 1784
+-------------------------------------------
+
+File: Imputation_v2_yxmc.txt
+-------------------------------------------
+Applying adapted Cuthill-McKee approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 81x81
+bandwidth(A) = 71
+bandwidth(R) = 61
+peak = 3511
+peak (random path) = 3259
+-------------------------------------------
+
+File: Imputation_yxmc.txt
+-------------------------------------------
+Applying adapted Cuthill-McKee approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 61x61
+bandwidth(A) = 55
+bandwidth(R) = 36
+peak = 3293
+peak (random path) = 3218
+-------------------------------------------
+
+File: Legend_Splitter_yxmc.txt
+-------------------------------------------
+Applying adapted Cuthill-McKee approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 23x23
+bandwidth(A) = 15
+bandwidth(R) = 8
+peak = 662
+peak (random path) = 662
+-------------------------------------------
+
+File: MultiFieldBinning_yxmc.txt
+-------------------------------------------
+Applying adapted Cuthill-McKee approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 81x81
+bandwidth(A) = 78
+bandwidth(R) = 71
+peak = 2114
+peak (random path) = 2114
+-------------------------------------------
+
+File: PearsonCorrCoeff_yxmc.txt
+-------------------------------------------
+Applying adapted Cuthill-McKee approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 34x34
+bandwidth(A) = 22
+bandwidth(R) = 12
+peak = 582
+peak (random path) = 778
+-------------------------------------------
+
+File: PieWedgeTradeArea_yxmc.txt
+-------------------------------------------
+Applying adapted Cuthill-McKee approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 58x58
+bandwidth(A) = 44
+bandwidth(R) = 38
+peak = 1202
+peak (random path) = 1051
+-------------------------------------------
+
+File: RandomRecords_yxmc.txt
+-------------------------------------------
+Applying adapted Cuthill-McKee approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 29x29
+bandwidth(A) = 23
+bandwidth(R) = 14
+peak = 717
+peak (random path) = 717
+-------------------------------------------
+
+File: SelectRecords_yxmc.txt
+-------------------------------------------
+Applying adapted Cuthill-McKee approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 24x24
+bandwidth(A) = 20
+bandwidth(R) = 13
+peak = 656
+peak (random path) = 495
+-------------------------------------------
+
+File: SpearmanCorrCoeff_yxmc.txt
+-------------------------------------------
+Applying adapted Cuthill-McKee approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 48x48
+bandwidth(A) = 22
+bandwidth(R) = 12
+peak = 1687
+peak (random path) = 1565
+-------------------------------------------
+
+File: WeightedAvg_yxmc.txt
+-------------------------------------------
+Applying adapted Cuthill-McKee approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 19x19
+bandwidth(A) = 15
+bandwidth(R) = 14
+peak = 503
+peak (random path) = 482
+-------------------------------------------
+
+File: example.txt
+-------------------------------------------
+Applying adapted Cuthill-McKee approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 6x6
+bandwidth(A) = 2
+bandwidth(R) = 2
+peak = 15
+peak (random path) = 15
+-------------------------------------------
+
+File: parallel.txt
+-------------------------------------------
+Applying adapted Cuthill-McKee approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 20x20
+bandwidth(A) = 16
+bandwidth(R) = 16
+peak = 331
+peak (random path) = 331
+-------------------------------------------
+
+=============================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+File: Base64_Encoder_yxmc.txt
+-------------------------------------------
+Applying level approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 23x23
+bandwidth(A) = 15
+bandwidth(R) = 17
+peak = 781
+peak (random path) = 654
+-------------------------------------------
+
+File: Cleanse_yxmc.txt
+-------------------------------------------
+Applying level approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 35x35
+bandwidth(A) = 24
+bandwidth(R) = 24
+peak = 1175
+peak (random path) = 680
+-------------------------------------------
+
+File: CountRecords_yxmc.txt
+-------------------------------------------
+Applying level approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 9x9
+bandwidth(A) = 3
+bandwidth(R) = 3
+peak = 166
+peak (random path) = 166
+-------------------------------------------
+
+File: DateTimeNow_yxmc.txt
+-------------------------------------------
+Applying level approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 7x7
+bandwidth(A) = 4
+bandwidth(R) = 3
+peak = 147
+peak (random path) = 147
+-------------------------------------------
+
+File: Date_Filter_yxmc.txt
+-------------------------------------------
+Applying level approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 25x25
+bandwidth(A) = 24
+bandwidth(R) = 17
+peak = 303
+peak (random path) = 303
+-------------------------------------------
+
+File: FooterMacro_yxmc.txt
+-------------------------------------------
+Applying level approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 21x21
+bandwidth(A) = 13
+bandwidth(R) = 13
+peak = 586
+peak (random path) = 588
+-------------------------------------------
+
+File: Frequency_yxmc.txt
+-------------------------------------------
+Applying level approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 34x34
+bandwidth(A) = 27
+bandwidth(R) = 19
+peak = 1431
+peak (random path) = 1441
+-------------------------------------------
+
+File: Google_Analytics_v5_yxmc.txt
+-------------------------------------------
+Applying level approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 123x123
+bandwidth(A) = 74
+bandwidth(R) = 102
+peak = 11482
+peak (random path) = 9122
+-------------------------------------------
+
+File: Google_Analytics_v6_yxmc.txt
+-------------------------------------------
+Applying level approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 123x123
+bandwidth(A) = 74
+bandwidth(R) = 102
+peak = 11500
+peak (random path) = 9120
+-------------------------------------------
+
+File: Google_Analytics_yxmc.txt
+-------------------------------------------
+Applying level approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 108x108
+bandwidth(A) = 83
+bandwidth(R) = 53
+peak = 10887
+peak (random path) = 7789
+-------------------------------------------
+
+File: HeaderMacro_yxmc.txt
+-------------------------------------------
+Applying level approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 34x34
+bandwidth(A) = 25
+bandwidth(R) = 27
+peak = 864
+peak (random path) = 892
+-------------------------------------------
+
+File: HeatMap_yxmc.txt
+-------------------------------------------
+Applying level approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 95x95
+bandwidth(A) = 67
+bandwidth(R) = 66
+peak = 2123
+peak (random path) = 1784
+-------------------------------------------
+
+File: Imputation_v2_yxmc.txt
+-------------------------------------------
+Applying level approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 81x81
+bandwidth(A) = 71
+bandwidth(R) = 54
+peak = 3549
+peak (random path) = 3259
+-------------------------------------------
+
+File: Imputation_yxmc.txt
+-------------------------------------------
+Applying level approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 61x61
+bandwidth(A) = 55
+bandwidth(R) = 34
+peak = 3465
+peak (random path) = 3218
+-------------------------------------------
+
+File: Legend_Splitter_yxmc.txt
+-------------------------------------------
+Applying level approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 23x23
+bandwidth(A) = 15
+bandwidth(R) = 8
+peak = 662
+peak (random path) = 662
+-------------------------------------------
+
+File: MultiFieldBinning_yxmc.txt
+-------------------------------------------
+Applying level approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 81x81
+bandwidth(A) = 78
+bandwidth(R) = 71
+peak = 2114
+peak (random path) = 2114
+-------------------------------------------
+
+File: PearsonCorrCoeff_yxmc.txt
+-------------------------------------------
+Applying level approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 34x34
+bandwidth(A) = 22
+bandwidth(R) = 14
+peak = 678
+peak (random path) = 778
+-------------------------------------------
+
+File: PieWedgeTradeArea_yxmc.txt
+-------------------------------------------
+Applying level approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 58x58
+bandwidth(A) = 44
+bandwidth(R) = 38
+peak = 1202
+peak (random path) = 1051
+-------------------------------------------
+
+File: RandomRecords_yxmc.txt
+-------------------------------------------
+Applying level approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 29x29
+bandwidth(A) = 23
+bandwidth(R) = 12
+peak = 717
+peak (random path) = 717
+-------------------------------------------
+
+File: SelectRecords_yxmc.txt
+-------------------------------------------
+Applying level approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 24x24
+bandwidth(A) = 20
+bandwidth(R) = 12
+peak = 636
+peak (random path) = 495
+-------------------------------------------
+
+File: SpearmanCorrCoeff_yxmc.txt
+-------------------------------------------
+Applying level approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 48x48
+bandwidth(A) = 22
+bandwidth(R) = 13
+peak = 1565
+peak (random path) = 1565
+-------------------------------------------
+
+File: WeightedAvg_yxmc.txt
+-------------------------------------------
+Applying level approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 19x19
+bandwidth(A) = 15
+bandwidth(R) = 12
+peak = 543
+peak (random path) = 482
+-------------------------------------------
+
+File: example.txt
+-------------------------------------------
+Applying level approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 6x6
+bandwidth(A) = 2
+bandwidth(R) = 2
+peak = 15
+peak (random path) = 15
+-------------------------------------------
+
+File: parallel.txt
+-------------------------------------------
+Applying level approach: 
+Execution time = 0s
+
+dim(A) = dim(R) = 20x20
+bandwidth(A) = 16
+bandwidth(R) = 6
+peak = 412
+peak (random path) = 331
+-------------------------------------------
+
