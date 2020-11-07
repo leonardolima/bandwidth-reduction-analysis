@@ -3,6 +3,7 @@
 
 #include <Eigen/Dense>
 
-void apply_topological(const Eigen::MatrixXf&, Eigen::MatrixXf&);
+void apply_topological(const Eigen::MatrixXf&, Eigen::MatrixXf&,
+                       std::vector<int>&, std::vector<int>&);
 
 #endif

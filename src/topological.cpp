@@ -60,19 +60,19 @@ void topological_sorting(const std::vector<std::vector<int>>& children,
  * @param A     Adjacency matrix.
  * @param P     Permutation matrix.
  ******************************************************************************/
-void apply_topological(const Eigen::MatrixXf& A, Eigen::MatrixXf& P)
+void apply_topological(const Eigen::MatrixXf& A, Eigen::MatrixXf& P,
+                       std::vector<int>& worst_path, std::vector<int>& chosen_path)
 {
     const size_t num_nodes = A.rows(); // Matrix dimension
 
-    Eigen::MatrixXf M = Eigen::MatrixXf::Zero(num_nodes, num_nodes);
     Eigen::MatrixXf R = Eigen::MatrixXf::Zero(num_nodes, num_nodes);
 
     std::vector<std::vector<int>> children(num_nodes), parents(num_nodes), possible_paths;
     std::vector<int> indegree(num_nodes), path;
     std::vector<bool> marked(num_nodes);
 
-    // int min_bandwidth = std::numeric_limits<int>::max();
     int min_peak = std::numeric_limits<int>::max();
+    int max_peak = 0;
 
     children_from_matrix(A, children);
     parents_from_matrix(A, parents);
@@ -84,40 +84,26 @@ void apply_topological(const Eigen::MatrixXf& A, Eigen::MatrixXf& P)
 
     topological_sorting(children, possible_paths, path, indegree, marked, num_nodes);
 
-    // for(std::vector<std::vector<int>>::size_type i = 0; i < possible_paths.size(); ++i)
-    // {
-    //     label_sorted_nodes(A, P, make_sorted_pairs(possible_paths[i]));
-    //     M = (P*A*P.transpose());
-    //     int M_bandwidth = matrix_bandwidth(M);
-    //     if(M_bandwidth < min_bandwidth)
-    //     {
-    //         R = P;
-    //         min_bandwidth = M_bandwidth;
-    //     }
-    //     P.setZero();
-    // }
-    // P = R;
-
     for(std::vector<std::vector<int>>::size_type i = 0; i < possible_paths.size(); ++i)
     {
         int peak = peak_mem(A, possible_paths[i]);
+        label_sorted_nodes(A, R, make_sorted_pairs(possible_paths[i]));
 
-        // for(size_t j = 0; j < num_nodes; ++j)
-        // {
-        //     std::cout << possible_paths[i][j] << " ";
-        // }
-        // std::cout << std::endl;
+        // Maximum peak memory usage
+        if(peak > max_peak)
+        {
+            max_peak = peak;
+            worst_path = possible_paths[i];
+        }
 
-        // std::cout << "peak = " << peak << std::endl;
-        label_sorted_nodes(A, P, make_sorted_pairs(possible_paths[i]));
-        M = (P*A*P.transpose());
+        // Minimum peak memory usage
         if(peak < min_peak)
         {
-            R = P;
+            P = R;
             min_peak = peak;
+            chosen_path = possible_paths[i];
         }
-        P.setZero();
+
+        R.setZero();
     }
-    std::cout << "min_peak = " << min_peak << std::endl;
-    P = R;
 }

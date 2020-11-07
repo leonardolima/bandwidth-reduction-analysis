@@ -18,18 +18,23 @@ void label_nodes(const Eigen::MatrixXf& A, Eigen::MatrixXf& P,
     }
 }
 
-std::vector<std::pair<int, int>> sort_levels(const std::vector<int> levels)
+std::vector<std::pair<int, int>> sort_levels(const std::vector<int>& levels, std::vector<int>& path)
 {
     std::vector<std::pair<int, int>> sorted_levels;
 
     for (std::vector<int>::size_type i = 0; i < levels.size(); ++i)
     {
         std::pair<int, int> pair = std::make_pair(levels[i], i);
-        // std::cout << "(levels[i], i) = (" << levels[i] << ", " << i << ")" << std::endl;
         sorted_levels.push_back(pair);
     }
 
     std::sort(sorted_levels.begin(), sorted_levels.end());
+
+    // Store path
+    for (std::vector<std::pair<int, int>>::size_type i = 0; i < sorted_levels.size(); ++i)
+    {
+        path.push_back(sorted_levels[i].second);
+    }
 
     return sorted_levels;
 }
@@ -82,7 +87,8 @@ void compute_levels(const std::vector<std::vector<int>>& parents,
  * @param A     Adjacency matrix.
  * @param P     Permutation matrix.
  ******************************************************************************/
-void apply_levels(const Eigen::MatrixXf& A, Eigen::MatrixXf& P)
+void apply_levels(const Eigen::MatrixXf& A, Eigen::MatrixXf& P,
+                  std::vector<int>& chosen_path)
 {
     size_t size = A.rows(); // Number of nodes
 
@@ -95,7 +101,7 @@ void apply_levels(const Eigen::MatrixXf& A, Eigen::MatrixXf& P)
 
     compute_levels(parents, children, levels);
 
-    std::vector<std::pair<int, int>> sorted_levels = sort_levels(levels);
+    std::vector<std::pair<int, int>> sorted_levels = sort_levels(levels, chosen_path);
 
     label_nodes(A, P, sorted_levels);
 }

@@ -145,11 +145,11 @@ void sort_children(const Eigen::MatrixXf& A, std::vector<std::vector<int>>& chil
  * @param A     Adjacency matrix.
  * @param P     Permutation matrix.
  ******************************************************************************/
-void apply_adapted_cuthill_mckee(const Eigen::MatrixXf& A, Eigen::MatrixXf& P)
+void apply_adapted_cuthill_mckee(const Eigen::MatrixXf& A, Eigen::MatrixXf& P,
+                                 std::vector<int>& worst_path, std::vector<int>& chosen_path)
 {
     int num_nodes = A.rows(); // Matrix dimension
 
-    Eigen::MatrixXf M = Eigen::MatrixXf::Zero(num_nodes, num_nodes);
     Eigen::MatrixXf R = Eigen::MatrixXf::Zero(num_nodes, num_nodes);
 
     std::vector<std::vector<int>> children(num_nodes), parents(num_nodes);
@@ -157,8 +157,8 @@ void apply_adapted_cuthill_mckee(const Eigen::MatrixXf& A, Eigen::MatrixXf& P)
     std::vector<bool> marked(num_nodes, false);
     std::vector<int> path;
 
-    // int min_bandwidth = std::numeric_limits<int>::max();
     int min_peak = std::numeric_limits<int>::max();
+    int max_peak = 0;
 
     children_from_matrix(A, children);
     parents_from_matrix(A, parents);
@@ -172,37 +172,31 @@ void apply_adapted_cuthill_mckee(const Eigen::MatrixXf& A, Eigen::MatrixXf& P)
     sort_children(A, children);
     starting_nodes = select_starting_nodes(parents, children);
 
-    // for(std::vector<int>::size_type j = 0; j < starting_nodes.size(); ++j)
-    // {
-    //     std::cout << starting_nodes[j] << " ";
-    // }
-    // std::cout << std::endl;
-
     do {
         nodal_numbering(parents, children, starting_nodes, path, marked, indegree, num_nodes);
+
         int peak = peak_mem(A, path);
 
-        // for(std::vector<int>::size_type j = 0; j < path.size(); ++j)
-        // {
-        //     std::cout << path[j] << " ";
-        // }
-        // std::cout << std::endl;
-        // std::cout << "peak = " << peak << std::endl;
+        label_sorted_nodes(A, R, make_sorted_pairs(path));
 
-        label_sorted_nodes(A, P, make_sorted_pairs(path));
-        M = (P*A*P.transpose());
+        // Maximum peak memory usage
+        if(peak > max_peak)
+        {
+            max_peak = peak;
+            worst_path = path;
+        }
+
+        // Minimum peak memory usage
         if(peak < min_peak)
         {
-            R = P;
+            P = R;
             min_peak = peak;
+            chosen_path = path;
         }
-        P.setZero();
 
         // Clearing/resetting auxiliary vectors
         std::fill(marked.begin(), marked.end(), false);
         path.clear();
+        R.setZero();
     } while(std::next_permutation(starting_nodes.begin(), starting_nodes.end()));
-
-    std::cout << "min_peak = " << min_peak << std::endl;
-    P = R;
 }
