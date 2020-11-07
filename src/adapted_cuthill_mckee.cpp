@@ -1,12 +1,47 @@
 #include <iostream>
 #include <vector>
-#include <deque>
 #include <algorithm>
+#include <functional>
 #include <Eigen/Dense>
 #include "adapted_cuthill_mckee.h"
 #include "peak_mem.h"
 #include "basic.h"
 #include "io.h"
+
+std::vector<int> list_disconnected_nodes(const std::vector<std::vector<int>>& parents,
+                                         const std::vector<std::vector<int>>& children)
+{
+    std::vector<int> disconnected_nodes;
+
+    // Disconnected nodes
+    for(std::vector<std::vector<int>>::size_type i = 0; i < parents.size(); ++i)
+    {
+        if(parents[i].empty() && children[i].empty()) disconnected_nodes.push_back(i);
+    }
+
+    return disconnected_nodes;
+}
+
+void process_node(const std::vector<std::vector<int>>& children,
+                  std::vector<int>& path,
+                  std::vector<int>& indegree,
+                  std::vector<bool>& marked,
+                  int& seen,
+                  int num_nodes,
+                  int node)
+{
+    if(indegree[node] == 0 && !marked[node])
+    {
+        // std::cout << "processing: " << node << std::endl;
+        for(std::vector<int>::size_type j = 0; j < children[node].size(); ++j)
+        {
+            indegree[children[node][j]]--;
+        }
+        path.push_back(node);
+        marked[node] = true;
+        seen++;
+    }
+}
 
 /*******************************************************************************
  * Implementation of a topological sorting algorithm, based on the depth-first
@@ -20,63 +55,49 @@
  * @param children     List of children for each node
  * @param sorted_nodes Resulting vector with sorted nodes
  ******************************************************************************/
-void nodal_numbering(const std::vector<std::vector<int>>& children,
+void nodal_numbering(const std::vector<std::vector<int>>& parents,
+                     const std::vector<std::vector<int>>& children,
+                     const std::vector<int>& starting_nodes,
                      std::vector<int>& path,
-                     std::vector<int>& indegree,
-                     std::vector<int>& outdegree,
                      std::vector<bool>& marked,
-                     int num_nodes,
-                     int starting_node)
+                     std::vector<int> indegree, // Copy
+                     int num_nodes)
 {
-    std::deque<int> d;
-    int seen = 0;
+    int seen = 0, counter = 0;
+    std::vector<int> disconnected_nodes = list_disconnected_nodes(parents, children);
 
-    // Disconnected nodes
-    for(int i = 0; i < num_nodes; ++i)
+    // Process disconnected nodes
+    for(std::vector<int>::size_type i = 0; i < disconnected_nodes.size(); ++i)
     {
-        if(indegree[i] == 0 && outdegree[i] == 0 && !marked[i])
-        {
-            path.push_back(i);
-            marked[i] = true;
-            seen++;
-        }
+        process_node(children, path, indegree, marked, seen, num_nodes, i);
     }
-
-    path.push_back(starting_node);
-    marked[starting_node] = true;
-    seen++;
 
     // Connected nodes
     while(seen < num_nodes)
     {
+        // Starting node
+        // std::cout << "starting_node = " << starting_nodes[counter] << std::endl;
+        process_node(children, path, indegree, marked, seen, num_nodes, starting_nodes[counter]);
+        counter++;
+
+        // std::cout << "seen = " << seen << std::endl;
         for(int i = 0; i < num_nodes; ++i)
         {
-            if(indegree[i] == 0 && !marked[i])
-            {
-                for(std::vector<int>::size_type j = 0; j < children[i].size(); ++j)
-                {
-                    path.push_back(children[i][j]);
-                    indegree[children[i][j]]--;
-                    marked[children[i][j]] = true;
-                    seen++;
-                }
-
-                path.push_back(i);
-                marked[i] = true;
-            }
-
+            // std::cout << "i = " << i << std::endl;
+            process_node(children, path, indegree, marked, seen, num_nodes, i);
         }
     }
 }
 
-std::vector<int> select_starting_nodes(const Eigen::MatrixXf& A,
-                                       const std::vector<std::vector<int>>& parents)
+std::vector<int> select_starting_nodes(const std::vector<std::vector<int>>& parents,
+                                       const std::vector<std::vector<int>>& children)
 {
     std::vector<int> starting_nodes;
 
+    // Starting nodes in each component of the graph
     for(std::vector<std::vector<int>>::size_type i = 0; i < parents.size(); ++i)
     {
-        if(parents[i].size() == 0) starting_nodes.push_back(i);
+        if(parents[i].empty() && !children[i].empty()) starting_nodes.push_back(i);
     }
 
     return starting_nodes;
@@ -96,10 +117,19 @@ void sort_children(const Eigen::MatrixXf& A, std::vector<std::vector<int>>& chil
             pairs.push_back(pair);
         }
 
-        std::sort(pairs.begin(), pairs.end());
+        ////////////////////////////////////////////////////////
+        // std::cout << "Pairs: ";
+        // for(std::vector<int>::size_type j = 0; j < pairs.size(); ++j)
+        // {
+        //     std::cout << "(" << pairs[j].first << ", " << pairs[j].second << ") | ";
+        // }
+        // std::cout << std::endl;
+        ////////////////////////////////////////////////////////
+
+        std::sort(pairs.begin(), pairs.end(), std::greater<>());
         children[i].clear();
 
-        for(std::vector<std::pair<int, int>>::size_type j = pairs.size(); j >= 0; --j)
+        for(std::vector<std::pair<int, int>>::size_type j = 0; j < pairs.size(); ++j)
         {
             children[i].push_back(pairs[j].second);
         }
@@ -122,9 +152,9 @@ void apply_adapted_cuthill_mckee(const Eigen::MatrixXf& A, Eigen::MatrixXf& P)
     Eigen::MatrixXf M = Eigen::MatrixXf::Zero(num_nodes, num_nodes);
     Eigen::MatrixXf R = Eigen::MatrixXf::Zero(num_nodes, num_nodes);
 
-    std::vector<std::vector<int>> children(num_nodes), parents(num_nodes), possible_paths;
+    std::vector<std::vector<int>> children(num_nodes), parents(num_nodes);
     std::vector<int> indegree(num_nodes), outdegree(num_nodes), starting_nodes;
-    std::vector<bool> marked(num_nodes);
+    std::vector<bool> marked(num_nodes, false);
     std::vector<int> path;
 
     // int min_bandwidth = std::numeric_limits<int>::max();
@@ -140,32 +170,39 @@ void apply_adapted_cuthill_mckee(const Eigen::MatrixXf& A, Eigen::MatrixXf& P)
     }
 
     sort_children(A, children);
+    starting_nodes = select_starting_nodes(parents, children);
 
-    starting_nodes = select_starting_nodes(A, parents);
+    // for(std::vector<int>::size_type j = 0; j < starting_nodes.size(); ++j)
+    // {
+    //     std::cout << starting_nodes[j] << " ";
+    // }
+    // std::cout << std::endl;
 
-    for(std::vector<int>::size_type i = 0; i < starting_nodes.size(); ++i)
-    {
-        nodal_numbering(children, path, indegree, outdegree, marked, num_nodes, starting_nodes[i]);
-        possible_paths.push_back(path);
-
+    do {
+        nodal_numbering(parents, children, starting_nodes, path, marked, indegree, num_nodes);
         int peak = peak_mem(A, path);
 
-        for(std::vector<int>::size_type j = 0; j < path.size(); ++j)
-        {
-            std::cout << path[j] << " ";
-        }
-        std::cout << std::endl;
-
-        std::cout << "peak = " << peak << std::endl;
-        // label_sorted_nodes(A, P, make_sorted_pairs(possible_paths[i]));
-        // M = (P*A*P.transpose());
-        // if(peak < min_peak)
+        // for(std::vector<int>::size_type j = 0; j < path.size(); ++j)
         // {
-        //     R = P;
-        //     min_peak = peak;
+        //     std::cout << path[j] << " ";
         // }
-        // P.setZero();
-    }
-    // std::cout << "min_peak = " << min_peak << std::endl;
-    // P = R;
+        // std::cout << std::endl;
+        // std::cout << "peak = " << peak << std::endl;
+
+        label_sorted_nodes(A, P, make_sorted_pairs(path));
+        M = (P*A*P.transpose());
+        if(peak < min_peak)
+        {
+            R = P;
+            min_peak = peak;
+        }
+        P.setZero();
+
+        // Clearing/resetting auxiliary vectors
+        std::fill(marked.begin(), marked.end(), false);
+        path.clear();
+    } while(std::next_permutation(starting_nodes.begin(), starting_nodes.end()));
+
+    std::cout << "min_peak = " << min_peak << std::endl;
+    P = R;
 }

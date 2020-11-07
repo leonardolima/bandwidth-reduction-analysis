@@ -185,13 +185,13 @@ void test_all(const std::string& file_name)
     // Resulting matrix
     Eigen::MatrixXf R = Eigen::MatrixXf::Zero(N, N);
 
-    // // Vector corresponding to the ordering L_x > [L_yi]
-    // std::vector<std::vector<int>> prec_O(N);
+    // Vector corresponding to the ordering L_x > [L_yi]
+    std::vector<std::vector<int>> prec_O(N);
 
-    // // Vector corresponding to the ordering L_x < [L_yi]
+    // Vector corresponding to the ordering L_x < [L_yi]
     // std::vector<std::vector<int>> succ_O(N);
 
-    // read_file(file_name, A, prec_O, N);
+    read_file(file_name, A, prec_O, N);
 
     // convert_vector(prec_O, succ_O);
 
@@ -209,5 +209,5 @@ void test_all(const std::string& file_name)
     //test_levels(A, P, R);
 
     // 2. Topological sorting
-    test_topological(A, P, R);
+    // test_topological(A, P, R);
 }
