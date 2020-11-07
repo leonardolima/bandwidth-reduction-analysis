@@ -108,3 +108,29 @@ std::vector<int> compute_nodes_deg(const Eigen::MatrixXf& A)
 
     return nodes_deg;
 }
+
+void label_sorted_nodes(const Eigen::MatrixXf& A, Eigen::MatrixXf& P,
+                        std::vector<std::pair<int, int>> sorted_pairs)
+{
+
+    // P_{ij}: where i is the new node label and j is the original one
+    for (std::vector<std::pair<int, int>>::size_type i = 0; i < sorted_pairs.size(); ++i)
+        {
+            P(sorted_pairs[i].first, sorted_pairs[i].second) = 1; // Update matrix P accordingly
+        }
+}
+
+std::vector<std::pair<int, int>> make_sorted_pairs(const std::vector<int> sorted_nodes)
+{
+    std::vector<std::pair<int, int>> sorted_pairs;
+
+    for (std::vector<int>::size_type i = 0; i < sorted_nodes.size(); ++i)
+        {
+            std::pair<int, int> pair = std::make_pair(i, sorted_nodes[i]);
+            sorted_pairs.push_back(pair);
+        }
+
+    std::sort(sorted_pairs.begin(), sorted_pairs.end());
+
+    return sorted_pairs;
+}
