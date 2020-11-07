@@ -17,7 +17,7 @@
  * @param s String.
  * @param del Delimiter between integers.
  ******************************************************************************/
-std::vector<int> string_split (const std::string& s, const char del)
+std::vector<int> string_split(const std::string& s, const char del)
 {
     std::vector<int> tokens;
     std::string token;
@@ -59,8 +59,8 @@ int read_N_from_file (const std::string& file_name)
  * @param A Adjacency matrix of the graph.
  * @param O Ordering constraints (given in the form L_x > [L_yi]).
  ******************************************************************************/
-void read_file (const std::string& file_name, Eigen::MatrixXf& A,
-                std::vector<std::vector<int>>& O, int N)
+void read_file(const std::string& file_name, Eigen::MatrixXf& A,
+               std::vector<std::vector<int>>& O, int N)
 {
     std::vector<std::vector<int>> tokens(N);
 
@@ -112,8 +112,8 @@ void read_file (const std::string& file_name, Eigen::MatrixXf& A,
  * @param O     Ordering constraints (in the form L_x > [L_yi]).
  * @param new_O Ordering constraints (in the form L_x < [L_yi]).
  ******************************************************************************/
-void convert_vector (const std::vector<std::vector<int>>& O,
-                     std::vector<std::vector<int>>& new_O)
+void convert_vector(const std::vector<std::vector<int>>& O,
+                    std::vector<std::vector<int>>& new_O)
 {
     for (std::vector<std::vector<int>>::size_type i = 0; i < O.size(); ++i)
     {
@@ -124,20 +124,14 @@ void convert_vector (const std::vector<std::vector<int>>& O,
     }
 }
 
-void test_adapted_cuthill_mckee (const Eigen::MatrixXf& A, Eigen::MatrixXf& P, Eigen::MatrixXf& R,
-                                 const std::vector<std::vector<int>>& prec_O,
-                                 const std::vector<std::vector<int>>& succ_O)
+void test_adapted_cuthill_mckee(const Eigen::MatrixXf& A, Eigen::MatrixXf& P, Eigen::MatrixXf& R)
 {
-    Eigen::MatrixXf A_sym = A;
+    apply_adapted_cuthill_mckee(A, P);
 
-    apply_symmetry(A_sym);
+    // R = (P*A*P.transpose());
 
-    apply_adapted_cuthill_mckee(A, A_sym, P, R, prec_O, succ_O);
-
-    R = (P*A*P.transpose());
-
-    std::cout << "Applying adapted Cuthill-McKee algorithm: " << std::endl;
-    print_bandwidth_comparison(A, R);
+    // std::cout << "Applying adapted Cuthill-McKee algorithm: " << std::endl;
+    // print_bandwidth_comparison(A, R);
 }
 
 void test_levels(const Eigen::MatrixXf& A, Eigen::MatrixXf& P, Eigen::MatrixXf& R)
@@ -191,15 +185,15 @@ void test_all(const std::string& file_name)
     // Resulting matrix
     Eigen::MatrixXf R = Eigen::MatrixXf::Zero(N, N);
 
-    // Vector corresponding to the ordering L_x > [L_yi]
-    std::vector<std::vector<int>> prec_O(N);
+    // // Vector corresponding to the ordering L_x > [L_yi]
+    // std::vector<std::vector<int>> prec_O(N);
 
-    // Vector corresponding to the ordering L_x < [L_yi]
-    std::vector<std::vector<int>> succ_O(N);
+    // // Vector corresponding to the ordering L_x < [L_yi]
+    // std::vector<std::vector<int>> succ_O(N);
 
-    read_file(file_name, A, prec_O, N);
+    // read_file(file_name, A, prec_O, N);
 
-    convert_vector(prec_O, succ_O);
+    // convert_vector(prec_O, succ_O);
 
     // for (std::vector<std::vector<int>>::size_type i = 0; i < succ_O.size(); ++i)
     // {
@@ -209,7 +203,7 @@ void test_all(const std::string& file_name)
     // }
 
     // 1. Adapted Cuthill-McKee approach
-    //test_adapted_cuthill_mckee(A, P, R, prec_O, succ_O);
+    test_adapted_cuthill_mckee(A, P, R);
 
     // 2. Level approach
     //test_levels(A, P, R);
