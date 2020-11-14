@@ -17,7 +17,12 @@ def plot_bandwidth_comparison():
 
     N_unfiltered = [6, 7, 9, 19, 20, 21, 23, 23, 24, 25, 29, 34, 34, 34, 35, 48, 58, 61, 81, 81, 95, 108, 123, 123]
     bw_before_unfiltered = [2, 4, 3, 15, 16, 13, 15, 15, 20, 24, 23, 27, 25, 22, 24, 22, 44, 55, 71, 78, 67, 83, 74, 74]
-    bw_after_unfiltered = [2, 3, 3, 14, 16, 13, 18, 8, 14, 20, 18, 17, 27, 12, 24, 12, 39, 34, 71, 75, 66, 64, 102, 102]
+    bw_after_unfiltered = [2, 3, 3, 12, 6, 13, 17, 8, 12, 17, 12, 19, 27, 14, 24, 13, 38, 34, 54, 71, 66, 53, 102, 102]
+
+    # Filtering
+    # N = N[:-4]
+    # bw_before = bw_before[:-4]
+    # bw_after = bw_after[:-4]
 
     N, bw_before, bw_after = [], [], []
 
@@ -37,7 +42,7 @@ def plot_bandwidth_comparison():
     ax = plt.gca()
 
     df.plot(kind='line', x='N', y='bw_before', label='Bandwidth', ax=ax, color="tab:red", marker='s')
-    df.plot(kind='line', x='N', y='bw_after', label='Bandwidth after applying ACM', ax=ax, color="tab:blue", marker='s')
+    df.plot(kind='line', x='N', y='bw_after', label='Bandwidth after applying level-based approach', ax=ax, color="tab:blue", marker='s')
     #plt.title('Crank-Nicolson scheme\'s runtime for solving the Heat Equation in 2D (nsteps=1000)')
 
     # for (i,j) in zip(N[6:],before[6:]):
@@ -52,7 +57,7 @@ def plot_bandwidth_comparison():
     plt.xlabel('Matrix dimension')
     plt.ylabel('Bandwidth')
     plt.grid(True)
-    plt.savefig('acm_bw.png', bbox_inches='tight')
+    plt.savefig('level_bw.png', bbox_inches='tight')
     plt.show()
 
 def plot_peak_comparison():
@@ -67,28 +72,28 @@ def plot_peak_comparison():
 
     N_unfiltered = [6, 7, 9, 19, 20, 21, 23, 23, 24, 25, 29, 34, 34, 34, 35, 48, 58, 61, 81, 81, 95, 108, 123, 123]
     peak_random_unfiltered = [15, 147, 166, 482, 331, 588, 654, 662, 495, 303, 717, 1441, 892, 778,  680, 1565, 1051, 3218, 3259, 2114, 1784, 7789, 9122, 9120]
-    peak_acm_unfiltered = [15, 147, 166, 503, 331, 588, 781, 662, 656, 303, 717, 1431, 864, 582, 1178, 1687,1202, 3293, 3403, 2114, 2145, 10260, 10781, 10780]
+    peak_level_unfiltered = [15, 147, 166, 543, 412, 586, 781, 662, 636, 303, 717, 1431, 864, 678, 1175, 1565, 1202, 3465, 3549, 2114, 2123, 10887, 11482, 11500]
 
     # Filtering
-    N, peak_random, peak_acm = [], [], []
+    N, peak_random, peak_level = [], [], []
 
     for i in range(0,len(N_unfiltered)):
         if i > 0:
             if N_unfiltered[i] != N_unfiltered[i-1]:
                 N.append(N_unfiltered[i])
                 peak_random.append(peak_random_unfiltered[i])
-                peak_acm.append(peak_acm_unfiltered[i])
-        if peak_random_unfiltered[i] == peak_acm_unfiltered[i]:
+                peak_level.append(peak_level_unfiltered[i])
+        if peak_random_unfiltered[i] == peak_level_unfiltered[i]:
             N.append(N_unfiltered[i])
             peak_random.append(peak_random_unfiltered[i])
-            peak_acm.append(peak_acm_unfiltered[i])
+            peak_level.append(peak_level_unfiltered[i])
 
-    df = pd.DataFrame({'N': N, 'peak_random': peak_random, 'peak_acm': peak_acm})
+    df = pd.DataFrame({'N': N, 'peak_random': peak_random, 'peak_level': peak_level})
 
     ax = plt.gca()
 
     df.plot(kind='line', x='N', y='peak_random', label='Peak memory usage', ax=ax, color="tab:red", marker='s', style='-')
-    df.plot(kind='line', x='N', y='peak_acm', label='Peak memory usage applying ACM', ax=ax, color="tab:blue", marker='s', style='-')
+    df.plot(kind='line', x='N', y='peak_level', label='Peak memory usage applying level-based approach', ax=ax, color="tab:blue", marker='s', style='-')
     #plt.title('Crank-Nicolson scheme\'s runtime for solving the Heat Equation in 2D (nsteps=1000)')
 
     # for (i,j) in zip(N[6:],before[6:]):
@@ -104,12 +109,12 @@ def plot_peak_comparison():
     plt.xlabel('Matrix dimension')
     plt.ylabel('Peak memory usage')
     plt.grid(True)
-    plt.savefig('acm_peak.png', bbox_inches='tight')
+    plt.savefig('level_peak.png', bbox_inches='tight')
     plt.show()
 
 def main():
-    plot_peak_comparison()
     plot_bandwidth_comparison()
+    plot_peak_comparison()
 
 if __name__ == "__main__":
     main()

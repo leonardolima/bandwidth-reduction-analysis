@@ -13,15 +13,15 @@ def plot_runtime():
 
     ax = plt.gca()
 
-    df.plot(kind='line', x='N', y='before', label='Execution time', ax=ax, color="tab:red", marker='s')
-    df.plot(kind='line', x='N', y='after', label='Execution time after bandwidth reduction', ax=ax, color="tab:blue", marker='s')
+    df.plot(kind='line', x='N', y='before', label='Execution time', ax=ax, color="black", style='-')
+    df.plot(kind='line', x='N', y='after', label='Execution time after bandwidth reduction', ax=ax, color="black", style='-.')
     #plt.title('Crank-Nicolson scheme\'s runtime for solving the Heat Equation in 2D (nsteps=1000)')
 
-    for (i,j) in zip(N[6:],before[6:]):
-        plt.annotate(' '+str(j)+'s', (i-175,j), fontsize=9)
+    # for (i,j) in zip(N[6:],before[6:]):
+    #     plt.annotate(' '+str(j)+'s', (i-175,j), fontsize=9)
 
-    for (i,j) in zip(N[6:],after[6:]):
-        plt.annotate(' '+str(j)+'s', (i-100,j+250), fontsize=9)
+    # for (i,j) in zip(N[6:],after[6:]):
+    #     plt.annotate(' '+str(j)+'s', (i-100,j+250), fontsize=9)
 
     plt.xticks(N, fontsize=8)
     plt.yticks(range(0, 12000, 1000))
@@ -41,17 +41,17 @@ def plot_bandwidth_reduction():
 
     ax = plt.gca()
 
-    df.plot(kind='line', x='N', y='before', label='Bandwidth', ax=ax, color="tab:red", marker='s')
-    df.plot(kind='line', x='N', y='after', label='Bandwidth after reduction', ax=ax, color="tab:blue", marker='s')
+    df.plot(kind='line', x='N', y='before', label='Bandwidth', ax=ax, color="black", style='-')
+    df.plot(kind='line', x='N', y='after', label='Bandwidth after reduction', ax=ax, color="black", style='-.')
     #plt.title('Bandwidth reduction of the Cuthill-McKee algorithm')
 
-    for (i,j) in zip(N[1:-1],before[1:-1]):
-        plt.annotate(' '+str(j), (i+10,j-10), fontsize=9)
+    # for (i,j) in zip(N[1:-1],before[1:-1]):
+    #     plt.annotate(' '+str(j), (i+10,j-10), fontsize=9)
 
-    for (i,j) in zip(N[1:],after[1:]):
-        plt.annotate(' '+str(j), (i,j+7), fontsize=9)
+    # for (i,j) in zip(N[1:],after[1:]):
+    #     plt.annotate(' '+str(j), (i,j+7), fontsize=9)
 
-    plt.annotate('315', (1555,300), fontsize=9)
+    # plt.annotate('315', (1555,300), fontsize=9)
 
     plt.xticks(N, fontsize=8)
     plt.yticks(range(0, 325, 25))
