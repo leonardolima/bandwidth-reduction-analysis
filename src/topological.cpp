@@ -132,10 +132,11 @@ void apply_topological(const Eigen::MatrixXf& A,
 
     }
 
-    // std::cout << "path = ";
-    // for(std::vector<int>::size_type i = 0; i < path.size(); ++i)
-    // {
-    //     std::cout << path[i] << " ";
-    // }
-    // std::cout << std::endl;
+    std::cout << "(random) path: ";
+    for(std::vector<int>::size_type i = 0; i < path.size()-1; ++i)
+    {
+        std::cout << "[" << path[i] << "] -> ";
+    }
+    std::cout << "[" << path[path.size()-1] << "]";
+    std::cout << std::endl;
 }

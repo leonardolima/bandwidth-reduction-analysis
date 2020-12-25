@@ -72,15 +72,17 @@ void nodal_numbering(const std::vector<std::vector<int>>& parents,
         process_node(children, path, indegree, marked, seen, num_nodes, i);
     }
 
+    process_node(children, path, indegree, marked, seen, num_nodes, starting_nodes[0]);
+
     // Connected nodes
     while(seen < num_nodes)
     {
-        for(std::vector<int>::size_type i = 0; i < starting_nodes.size(); ++i)
-        {
-            // Starting nodes
-            // std::cout << "starting_node = " << starting_nodes[i] << std::endl;
-            process_node(children, path, indegree, marked, seen, num_nodes, starting_nodes[i]);
-        }
+        // for(std::vector<int>::size_type i = 0; i < starting_nodes.size(); ++i)
+        // {
+        //     // Starting nodes
+        //     // std::cout << "starting_node = " << starting_nodes[i] << std::endl;
+        //     process_node(children, path, indegree, marked, seen, num_nodes, starting_nodes[i]);
+        // }
 
         // std::cout << "seen = " << seen << std::endl;
         for(int i = 0; i < num_nodes; ++i)
@@ -146,7 +148,8 @@ void sort_children(const Eigen::MatrixXf& A, std::vector<std::vector<int>>& chil
         // std::cout << std::endl;
         ////////////////////////////////////////////////////////
 
-        std::sort(pairs.begin(), pairs.end(), std::greater<>());
+        // std::sort(pairs.begin(), pairs.end(), std::greater<>());
+        std::sort(pairs.begin(), pairs.end());
         children[i].clear();
 
         for(std::vector<std::pair<int, int>>::size_type j = 0; j < pairs.size(); ++j)
@@ -197,14 +200,13 @@ void apply_adapted_cuthill_mckee(const Eigen::MatrixXf& A, Eigen::MatrixXf& P,
 
     nodal_numbering(parents, children, starting_nodes, path, marked, indegree, num_nodes);
 
-    //////////////////////////////////////////////////////////
-    // std::cout << "path = ";
-    // for(std::vector<int>::size_type i = 0; i < path.size(); ++i)
-    // {
-    //     std::cout << path[i] << " ";
-    // }
-    // std::cout << std::endl;
-    //////////////////////////////////////////////////////////
+    std::cout << "path: ";
+    for(std::vector<int>::size_type i = 0; i < path.size()-1; ++i)
+        {
+            std::cout << "[" << path[i] << "] -> ";
+        }
+    std::cout << "[" << path[path.size()-1] << "]";
+    std::cout << std::endl;
 
     label_sorted_nodes(A, P, make_sorted_pairs(path));
 }

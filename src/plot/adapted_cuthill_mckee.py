@@ -19,25 +19,26 @@ def plot_bandwidth_comparison():
     bw_before_unfiltered = [2, 4, 3, 15, 16, 13, 15, 15, 20, 24, 23, 27, 25, 22, 24, 22, 44, 55, 71, 78, 67, 83, 74, 74]
     bw_after_unfiltered = [2, 3, 3, 14, 16, 13, 18, 8, 14, 20, 18, 17, 27, 12, 24, 12, 39, 34, 71, 75, 66, 64, 102, 102]
 
-    N, bw_before, bw_after = [], [], []
+    N, bw_before, bw_after = N_unfiltered, bw_before_unfiltered, bw_after_unfiltered
+    # N, bw_before, bw_after = [], [], []
 
-    for i in range(0,len(N_unfiltered)):
-        if i > 0:
-            if N_unfiltered[i] != N_unfiltered[i-1]:
-                N.append(N_unfiltered[i])
-                bw_before.append(bw_before_unfiltered[i])
-                bw_after.append(bw_after_unfiltered[i])
-        if bw_before_unfiltered[i] == bw_after_unfiltered[i]:
-            N.append(N_unfiltered[i])
-            bw_before.append(bw_before_unfiltered[i])
-            bw_after.append(bw_after_unfiltered[i])
+    # for i in range(0,len(N_unfiltered)):
+    #     if i > 0:
+    #         if N_unfiltered[i] != N_unfiltered[i-1]:
+    #             N.append(N_unfiltered[i])
+    #             bw_before.append(bw_before_unfiltered[i])
+    #             bw_after.append(bw_after_unfiltered[i])
+    #     if bw_before_unfiltered[i] == bw_after_unfiltered[i]:
+    #         N.append(N_unfiltered[i])
+    #         bw_before.append(bw_before_unfiltered[i])
+    #         bw_after.append(bw_after_unfiltered[i])
 
     df = pd.DataFrame({'N': N, 'bw_before': bw_before, 'bw_after': bw_after})
 
     ax = plt.gca()
 
-    df.plot(kind='line', x='N', y='bw_before', label='Bandwidth', ax=ax, color="tab:red", marker='s')
-    df.plot(kind='line', x='N', y='bw_after', label='Bandwidth after applying ACM', ax=ax, color="tab:blue", marker='s')
+    df.plot(kind='line', x='N', y='bw_before', label='Bandwidth', ax=ax, color="black", style='-')
+    df.plot(kind='line', x='N', y='bw_after', label='Bandwidth after applying ACM', ax=ax, color="black", style='-.')
     #plt.title('Crank-Nicolson scheme\'s runtime for solving the Heat Equation in 2D (nsteps=1000)')
 
     # for (i,j) in zip(N[6:],before[6:]):
@@ -69,26 +70,27 @@ def plot_peak_comparison():
     peak_random_unfiltered = [15, 147, 166, 482, 331, 588, 654, 662, 495, 303, 717, 1441, 892, 778,  680, 1565, 1051, 3218, 3259, 2114, 1784, 7789, 9122, 9120]
     peak_acm_unfiltered = [15, 147, 166, 503, 331, 588, 781, 662, 656, 303, 717, 1431, 864, 582, 1178, 1687,1202, 3293, 3403, 2114, 2145, 10260, 10781, 10780]
 
+    N, peak_random, peak_acm = N_unfiltered, peak_random_unfiltered, peak_acm_unfiltered
     # Filtering
-    N, peak_random, peak_acm = [], [], []
+    # N, peak_random, peak_acm = [], [], []
 
-    for i in range(0,len(N_unfiltered)):
-        if i > 0:
-            if N_unfiltered[i] != N_unfiltered[i-1]:
-                N.append(N_unfiltered[i])
-                peak_random.append(peak_random_unfiltered[i])
-                peak_acm.append(peak_acm_unfiltered[i])
-        if peak_random_unfiltered[i] == peak_acm_unfiltered[i]:
-            N.append(N_unfiltered[i])
-            peak_random.append(peak_random_unfiltered[i])
-            peak_acm.append(peak_acm_unfiltered[i])
+    # for i in range(0,len(N_unfiltered)):
+    #     if i > 0:
+    #         if N_unfiltered[i] != N_unfiltered[i-1]:
+    #             N.append(N_unfiltered[i])
+    #             peak_random.append(peak_random_unfiltered[i])
+    #             peak_acm.append(peak_acm_unfiltered[i])
+    #     if peak_random_unfiltered[i] == peak_acm_unfiltered[i]:
+    #         N.append(N_unfiltered[i])
+    #         peak_random.append(peak_random_unfiltered[i])
+    #         peak_acm.append(peak_acm_unfiltered[i])
 
     df = pd.DataFrame({'N': N, 'peak_random': peak_random, 'peak_acm': peak_acm})
 
     ax = plt.gca()
 
-    df.plot(kind='line', x='N', y='peak_random', label='Peak memory usage', ax=ax, color="tab:red", marker='s', style='-')
-    df.plot(kind='line', x='N', y='peak_acm', label='Peak memory usage applying ACM', ax=ax, color="tab:blue", marker='s', style='-')
+    df.plot(kind='line', x='N', y='peak_random', label='PMU', ax=ax, color="black", style='-')
+    df.plot(kind='line', x='N', y='peak_acm', label='PMU applying ACM', ax=ax, color="black", style='-.')
     #plt.title('Crank-Nicolson scheme\'s runtime for solving the Heat Equation in 2D (nsteps=1000)')
 
     # for (i,j) in zip(N[6:],before[6:]):
@@ -99,7 +101,7 @@ def plot_peak_comparison():
 
     plt.xticks(range(0,130,10), fontsize=8)
     # plt.xticks(N, fontsize=8)
-    plt.yticks(range(0, 13000, 500), fontsize=8)
+    plt.yticks(range(0, 13000, 1000), fontsize=8)
 
     plt.xlabel('Matrix dimension')
     plt.ylabel('Peak memory usage')
